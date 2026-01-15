@@ -11,29 +11,14 @@ import SwiftUI
 
 class MountainStore: ObservableObject {
     @Published var mountains: [Mountain] = []
-
+    
     init() {
         loadData()
     }
 
-    func saveData() {
-        if let encoded = try? JSONEncoder().encode(mountains) {
-            UserDefaults.standard.set(encoded, forKey: "mountains")
-        }
-    }
-
-    func loadData() {
-        if let saved = UserDefaults.standard.data(forKey: "mountains"),
-           let decoded = try? JSONDecoder().decode([Mountain].self, from: saved) {
-            mountains = decoded
-        } else {
-            mountains = sampleMountains
-        }
-    }
-
-    func toggleCompletion(for mountain: Mountain) {
-        if let index = mountains.firstIndex(where: { $0.id == mountain.id }) {
-            mountains[index].isCompleted.toggle()
+    func updateMountain(_ updated: Mountain) {
+        if let index = mountains.firstIndex(where: { $0.id == updated.id }) {
+            mountains[index] = updated
             saveData()
         }
     }

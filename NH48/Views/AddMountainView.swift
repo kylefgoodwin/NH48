@@ -33,9 +33,21 @@ struct AddMountainView: View {
                             description: "",
                             latitude: nil,
                             longitude: nil,
-                            isCompleted: false
+                            isCompleted: false,
+                            image: nil,
+                            personalNotes: nil,
+                            completionDate: nil,
+                            rating: nil,
+                            difficulty: nil,
+                            conditions: nil,
+                            distanceMiles: nil,
+                            elevationGain: nil,
+                            durationMinutes: nil,
+                            tags: [],
+                            photoFileNames: []
                         )
                         store.mountains.append(newMountain)
+                        store.saveData()
                         dismiss()
                     }) {
                         Text("Save")
@@ -55,3 +67,4 @@ struct AddMountainView: View {
 
     }
 }
+

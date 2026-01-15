@@ -46,7 +46,7 @@ struct ContentView: View {
     }
     
     var body: some View {
-        NavigationView {
+        NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 8) {
                     
@@ -70,11 +70,13 @@ struct ContentView: View {
                         NavigationLink(destination: MountainDetailView(mountain: mountain) { updatedMountain in
                             if let index = store.mountains.firstIndex(where: { $0.id == updatedMountain.id }) {
                                 store.mountains[index] = updatedMountain
+                                store.saveData()
                             }
                         }) {
                             MountainCardView(mountain: mountain) {
                                 if let index = store.mountains.firstIndex(where: { $0.id == mountain.id }) {
                                     store.mountains[index].isCompleted.toggle()
+                                    store.saveData()
                                 }
                             }
                         }
@@ -85,11 +87,17 @@ struct ContentView: View {
                 .padding(.top)
             }
             .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    HStack {
+                ToolbarItem(placement: .topBarLeading) {
+                    HStack(spacing: 8) {
+                        NavigationLink(destination: AllMountainsMapView(mountains: store.mountains)) {
+                            Image(systemName: "map")
+                                .imageScale(.medium)
+                        }
+                        .accessibilityLabel("Show Map")
+
                         Image(systemName: "magnifyingglass")
                             .foregroundColor(.gray)
-                        
+
                         HStack(spacing: 6) {
                             TextField("Search mountains", text: $searchText)
                                 .textFieldStyle(PlainTextFieldStyle())
@@ -126,11 +134,11 @@ struct ContentView: View {
                         .padding(.horizontal, 8)
                         .background(Color(.systemGray6))
                         .cornerRadius(8)
-                        .frame(width: 330)
+                        .frame(width: 260)
                     }
                 }
                 
-                ToolbarItem(placement: .navigationBarTrailing) {
+                ToolbarItem(placement: .topBarTrailing) {
                     Button(action: {
                         showAddMountainSheet.toggle()
                     }) {

@@ -5,15 +5,31 @@
 //  Created by Kyle Goodwin on 8/3/25.
 //
 
-
 // MountainDetailView.swift
 import SwiftUI
+import MapKit
+import PhotosUI
 
 struct MountainDetailView: View {
     var mountain: Mountain
     var onUpdate: (Mountain) -> Void
 
+    @Environment(\.dismiss) private var dismiss
+
     @State private var editableMountain: Mountain
+
+    @State private var selectedSegment: Segment = .info
+
+    private enum Segment: String, CaseIterable, Identifiable {
+        case info = "Info"
+        case tracker = "Tracker"
+        var id: String { rawValue }
+    }
+
+    // Tracker UI state
+    @State private var selectedPhotoItems: [PhotosPickerItem] = []
+    @State private var conditionsInput: String = ""
+    @State private var tagsInput: String = ""
 
     init(mountain: Mountain, onUpdate: @escaping (Mountain) -> Void) {
         self.mountain = mountain
@@ -22,50 +38,32 @@ struct MountainDetailView: View {
     }
 
     var body: some View {
-        Form {
-            Section(header: Text("Basic Info")) {
-                TextField("Name", text: $editableMountain.name)
-                TextField("Location", text: $editableMountain.location)
-                TextField("Elevation", value: $editableMountain.elevation, formatter: NumberFormatter())
-                    .keyboardType(.numberPad)
-            }
-            
-            Section(header: Text("Details")) {
-                TextField("Description", text: Binding($editableMountain.description, defaultValue: ""))
-                TextField("Latitude", value: Binding($editableMountain.latitude, defaultValue: 0.0), formatter: decimalFormatter)
-                    .keyboardType(.decimalPad)
-                TextField("Longitude", value: Binding($editableMountain.longitude, defaultValue: 0.0), formatter: decimalFormatter)
-                    .keyboardType(.decimalPad)
-            }
-            
-            Section {
-                Toggle("Completed", isOn: $editableMountain.isCompleted)
-            }
-            
-            Section {
-                Button("Save") {
-                    onUpdate(editableMountain)
+        VStack(spacing: 8) {
+            Picker("Section", selection: $selectedSegment) {
+                ForEach(Segment.allCases) { seg in
+                    Text(seg.rawValue).tag(seg)
                 }
             }
+            .pickerStyle(.segmented)
+            .padding(.horizontal)
+
+            if selectedSegment == .info {
+                MountainInfoView(mountain: $editableMountain)
+            } else {
+                MountainTrackerView(mountain: $editableMountain)
+            }
         }
-        .navigationTitle(editableMountain.name)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button(action: {
+                    onUpdate(editableMountain)
+                    dismiss()
+                }) {
+                    Text("Save").bold()
+                }
+                .buttonStyle(.borderedProminent)
+                .controlSize(.small)
+            }
+        }
     }
 }
-
-// Helper to provide a default binding for optionals
-extension Binding {
-    init(_ source: Binding<Value?>, defaultValue: Value) {
-        self.init(
-            get: { source.wrappedValue ?? defaultValue },
-            set: { newValue in source.wrappedValue = newValue }
-        )
-    }
-}
-
-private let decimalFormatter: NumberFormatter = {
-    let formatter = NumberFormatter()
-    formatter.numberStyle = .decimal
-    formatter.minimumFractionDigits = 0
-    formatter.maximumFractionDigits = 6 // or however many you want for lat/long
-    return formatter
-}()

@@ -12,16 +12,20 @@ struct MountainRowView: View {
     let mountain: Mountain
 
     var body: some View {
-        HStack {
-            VStack(alignment: .leading) {
-                Text(mountain.name)
-                    .font(.headline)
-                Text("\(mountain.elevation) ft")
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
+        NavigationLink {
+            MountainMapView(mountain: mountain)
+        } label: {
+            HStack {
+                VStack(alignment: .leading) {
+                    Text(mountain.name)
+                        .font(.headline)
+                    Text("\(mountain.elevation) ft")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                }
             }
+            .padding(.vertical, 4)
+            .padding(.horizontal)
         }
-        .padding(.vertical, 4)
-        .padding(.horizontal)
     }
 }
