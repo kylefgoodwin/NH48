@@ -25,8 +25,13 @@ struct MountainCardView: View {
     var body: some View {
         ZStack(alignment: .bottomLeading) {
             ZStack {
-                if let name = mountain.image,
-                   UIImage(named: name) != nil {
+                if let filename = mountain.image, let docImage = ImageStore.loadImage(named: filename) {
+                    Image(uiImage: docImage)
+                        .resizable()
+                        .scaledToFill()
+                        .frame(height: 180)
+                        .clipped()
+                } else if let name = assetImageName() {
                     Image(name)
                         .resizable()
                         .scaledToFill()
@@ -35,7 +40,7 @@ struct MountainCardView: View {
                 } else {
                     let gradient = mountain.isCompleted
                         ? Gradient(colors: [.green, .blue])
-                        : Gradient(colors: [Color.red.opacity(0.2), Color.red.opacity(0.4)]) 
+                        : Gradient(colors: [Color.red.opacity(0.2), Color.red.opacity(0.4)])
 
                     LinearGradient(
                         gradient: gradient,
@@ -88,6 +93,71 @@ struct MountainCardView: View {
         .padding(.horizontal)
         .shadow(radius: 4)
     }
+    
+    private func assetImageName() -> String? {
+        // 1) If the explicit image field is set and exists in assets, use it
+        if let explicit = mountain.image, UIImage(named: explicit) != nil {
+            return explicit
+        }
+
+        // 2) Try to derive a likely asset name from the mountain's name
+        let raw = mountain.name.lowercased()
+        // Keep only letters, numbers, and spaces
+        let allowed = raw.unicodeScalars.filter { CharacterSet.alphanumerics.union(.whitespaces).contains($0) }
+        let cleaned = String(String.UnicodeScalarView(allowed)).trimmingCharacters(in: .whitespaces)
+
+        // Build base variants by removing common prefixes/suffixes like "mount", "mt", and "mountain"
+        var bases: [String] = []
+        bases.append(cleaned)
+
+        let removedMount = cleaned
+            .replacingOccurrences(of: "mountain", with: "", options: .caseInsensitive)
+            .replacingOccurrences(of: "mount", with: "", options: .caseInsensitive)
+            .replacingOccurrences(of: "mt", with: "", options: .caseInsensitive)
+            .replacingOccurrences(of: "  ", with: " ")
+            .trimmingCharacters(in: .whitespaces)
+        if !removedMount.isEmpty { bases.append(removedMount) }
+
+        // Generate candidate forms for each base (spaces, underscores, hyphens, removed spaces)
+        var candidates: [String] = []
+        for base in bases {
+            let b = base
+            candidates.append(b)
+            candidates.append(b.replacingOccurrences(of: " ", with: "_"))
+            candidates.append(b.replacingOccurrences(of: " ", with: "-"))
+            candidates.append(b.replacingOccurrences(of: " ", with: ""))
+
+            // Also try with common prefixes
+            let withMount = "mount " + b
+            candidates.append(withMount)
+            candidates.append(withMount.replacingOccurrences(of: " ", with: "_"))
+            candidates.append(withMount.replacingOccurrences(of: " ", with: "-"))
+            candidates.append(withMount.replacingOccurrences(of: " ", with: ""))
+
+            let withMt = "mt " + b
+            candidates.append(withMt)
+            candidates.append(withMt.replacingOccurrences(of: " ", with: "_"))
+            candidates.append(withMt.replacingOccurrences(of: " ", with: "-"))
+            candidates.append(withMt.replacingOccurrences(of: " ", with: ""))
+
+            // And with a common suffix
+            let withMountain = b + " mountain"
+            candidates.append(withMountain)
+            candidates.append(withMountain.replacingOccurrences(of: " ", with: "_"))
+            candidates.append(withMountain.replacingOccurrences(of: " ", with: "-"))
+            candidates.append(withMountain.replacingOccurrences(of: " ", with: ""))
+        }
+
+        // Deduplicate and check which candidate actually exists in the asset catalog
+        var seen = Set<String>()
+        for candidate in candidates {
+            let c = candidate.lowercased()
+            if seen.insert(c).inserted {
+                if UIImage(named: c) != nil { return c }
+            }
+        }
+        return nil
+    }
 }
 
 
@@ -100,3 +170,4 @@ extension Image {
         }
     }
 }
+
