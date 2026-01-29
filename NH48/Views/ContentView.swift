@@ -104,10 +104,7 @@ struct ContentView: View {
                 VStack(spacing: 16) {
                     
                     HStack {
-                        Text("NH48")
-                            .font(.largeTitle.bold())
-                            .foregroundColor(.white)
-                        
+                        // Settings on the top-left
                         NavigationLink(destination: SettingsView()) {
                             Image(systemName: "gearshape")
                                 .foregroundStyle(.white)
@@ -119,8 +116,19 @@ struct ContentView: View {
                                 .shadow(color: Color.black.opacity(0.15), radius: 8, x: 0, y: 2)
                         }
                         .accessibilityLabel("Settings")
-                        
+
                         Spacer()
+
+                        // Centered title
+                        Text("NH48")
+                            .font(.largeTitle.bold())
+                            .foregroundColor(.white)
+                            .frame(maxWidth: .infinity)
+                            .multilineTextAlignment(.center)
+
+                        Spacer()
+
+                        // Add button on the top-right
                         Button(action: {
                             showAddMountainSheet.toggle()
                         }) {

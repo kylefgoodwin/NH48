@@ -4,10 +4,33 @@
 <dict>
 	<key>SchemeUserState</key>
 	<dict>
-		<key>NH48.xcscheme_^#shared#^_</key>
+		<key>NH48 Release.xcscheme</key>
 		<dict>
 			<key>orderHint</key>
 			<integer>0</integer>
+		</dict>
+		<key>NH48.xcscheme_^#shared#^_</key>
+		<dict>
+			<key>orderHint</key>
+			<integer>1</integer>
+		</dict>
+	</dict>
+	<key>SuppressBuildableAutocreation</key>
+	<dict>
+		<key>E39B3D5C2E3E6AB8001B6FBC</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>E39B3D6A2E3E6AB9001B6FBC</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>E39B3D742E3E6AB9001B6FBC</key>
+		<dict>
+			<key>primary</key>
+			<true/>
 		</dict>
 	</dict>
 </dict>

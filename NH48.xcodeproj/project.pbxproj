@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		E39568B22F2BBECF00DE8664 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E39568B12F2BBECF00DE8664 /* UIKit.framework */; platformFilters = (ios, xros, ); };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		E39B3D6C2E3E6AB9001B6FBC /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -24,6 +28,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		E39568B12F2BBECF00DE8664 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.1.sdk/System/Library/Frameworks/UIKit.framework; sourceTree = DEVELOPER_DIR; };
 		E39B3D5D2E3E6AB8001B6FBC /* NH48.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = NH48.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		E39B3D6B2E3E6AB9001B6FBC /* NH48Tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = NH48Tests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		E39B3D752E3E6AB9001B6FBC /* NH48UITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = NH48UITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -52,6 +57,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E39568B22F2BBECF00DE8664 /* UIKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -72,12 +78,21 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		E39568B02F2BBECF00DE8664 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				E39568B12F2BBECF00DE8664 /* UIKit.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		E39B3D542E3E6AB8001B6FBC = {
 			isa = PBXGroup;
 			children = (
 				E39B3D5F2E3E6AB8001B6FBC /* NH48 */,
 				E39B3D6E2E3E6AB9001B6FBC /* NH48Tests */,
 				E39B3D782E3E6AB9001B6FBC /* NH48UITests */,
+				E39568B02F2BBECF00DE8664 /* Frameworks */,
 				E39B3D5E2E3E6AB8001B6FBC /* Products */,
 			);
 			sourceTree = "<group>";
@@ -396,6 +411,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEAD_CODE_STRIPPING = YES;
+				DEVELOPMENT_TEAM = 9SB48TLKK8;
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
@@ -436,6 +452,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEAD_CODE_STRIPPING = YES;
+				DEVELOPMENT_TEAM = 9SB48TLKK8;
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
