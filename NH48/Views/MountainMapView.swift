@@ -34,7 +34,6 @@ struct MountainMapView: View {
                                                 span: MKCoordinateSpan(latitudeDelta: 0.1, longitudeDelta: 0.1))
                 cameraPosition = .region(region)
             } else {
-                // Fallback to a sensible default (center of New Hampshire)
                 let fallback = CLLocationCoordinate2D(latitude: 43.1939, longitude: -71.5724)
                 let region = MKCoordinateRegion(center: fallback,
                                                 span: MKCoordinateSpan(latitudeDelta: 1.5, longitudeDelta: 1.5))

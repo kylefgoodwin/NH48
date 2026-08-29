@@ -1,16 +1,16 @@
 import SwiftUI
 
 struct FilterControls: View {
-    @Binding var selectedFilter: ContentView.MountainFilter
+    @Binding var selectedFilter: MountainFilter
     @Binding var selectedRange: String?
-    @Binding var sortOption: ContentView.SortOption
-    let label: (ContentView.MountainFilter) -> String
+    @Binding var sortOption: SortOption
+    let label: (MountainFilter) -> String
     let uniqueRanges: [String]
     
     var body: some View {
         VStack(spacing: 8) {
             Picker("Filter", selection: $selectedFilter) {
-                ForEach(ContentView.MountainFilter.allCases) { filter in
+                ForEach(MountainFilter.allCases) { filter in
                     Text(label(filter))
                         .lineLimit(1)
                         .minimumScaleFactor(0.8)
@@ -52,9 +52,9 @@ struct FilterControls: View {
             }
             
             Picker("Sort", selection: $sortOption) {
-                Text("Elev ↓").tag(ContentView.SortOption.elevationDescending)
-                Text("Elev ↑").tag(ContentView.SortOption.elevationAscending)
-                Text("Name").tag(ContentView.SortOption.name)
+                Text("Elev ↓").tag(SortOption.elevationDescending)
+                Text("Elev ↑").tag(SortOption.elevationAscending)
+                Text("Name").tag(SortOption.name)
             }
             .pickerStyle(.segmented)
         }

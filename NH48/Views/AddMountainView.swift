@@ -2,7 +2,6 @@ import SwiftUI
 
 struct AddMountainView: View {
     @ObservedObject var store: MountainStore
-
     @Environment(\.dismiss) private var dismiss
 
     @State private var name: String = ""
@@ -10,61 +9,43 @@ struct AddMountainView: View {
     @State private var elevation: String = ""
 
     var body: some View {
-        NavigationView {
-            ScrollView {
-                VStack(spacing: 20) {
-
+        NavigationStack {
+            Form {
+                Section(header: Text("Mountain Details")) {
                     TextField("Name", text: $name)
-                        .textFieldStyle(RoundedBorderTextFieldStyle())
-
-                    TextField("Location", text: $location)
-                        .textFieldStyle(RoundedBorderTextFieldStyle())
-
-                    TextField("Elevation", text: $elevation)
+                        .textInputAutocapitalization(.words)
+                    
+                    TextField("Location (e.g. Range)", text: $location)
+                        .textInputAutocapitalization(.words)
+                    
+                    TextField("Elevation (ft)", text: $elevation)
                         .keyboardType(.numberPad)
-                        .textFieldStyle(RoundedBorderTextFieldStyle())
-
-                    Button(action: {
+                }
+            }
+            .navigationTitle("Add a Mountain")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") {
+                        dismiss()
+                    }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Save") {
                         let elevationInt = Int(elevation) ?? 0
                         let newMountain = Mountain(
                             name: name,
                             elevation: elevationInt,
                             location: location,
-                            description: "",
-                            latitude: nil,
-                            longitude: nil,
-                            isCompleted: false,
-                            image: nil,
-                            personalNotes: nil,
-                            completionDate: nil,
-                            rating: nil,
-                            difficulty: nil,
-                            conditions: nil,
-                            distanceMiles: nil,
-                            elevationGain: nil,
-                            durationMinutes: nil,
-                            tags: [],
-                            photoFileNames: []
+                            isCompleted: false
                         )
                         store.mountains.append(newMountain)
                         store.saveData()
                         dismiss()
-                    }) {
-                        Text("Save")
-                            .frame(width: 200, height: 50)
-                            .background(Color.blue)
-                            .foregroundColor(.white)
-                            .cornerRadius(10)
-                            .font(.headline)
                     }
-
-                    Spacer()
+                    .disabled(name.isEmpty || location.isEmpty || elevation.isEmpty)
                 }
-                .padding()
             }
-            .navigationTitle("Add a Mountain")
         }
-
     }
 }
-

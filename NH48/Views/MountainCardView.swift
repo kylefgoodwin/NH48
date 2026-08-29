@@ -5,169 +5,102 @@
 //  Created by Kyle Goodwin on 9/24/25.
 //
 
-
 import SwiftUI
-
-let fallbackGradients: [Gradient] = [
-    Gradient(colors: [.blue.opacity(0.7), .green.opacity(0.7)]),
-    Gradient(colors: [.purple.opacity(0.7), .pink.opacity(0.7)]),
-    Gradient(colors: [.orange.opacity(0.7), .red.opacity(0.7)]),
-    Gradient(colors: [.teal.opacity(0.7), .indigo.opacity(0.7)]),
-    Gradient(colors: [.gray.opacity(0.7), .black.opacity(0.7)])
-]
-
 
 struct MountainCardView: View {
     var mountain: Mountain
     var onToggleCompleted: () -> Void
 
-    
+    private var userImage: UIImage? {
+        if let filename = mountain.image, let docImage = ImageStore.loadImage(named: filename) {
+            return docImage
+        }
+        if let firstPhoto = mountain.photoFileNames.first, let docImage = ImageStore.loadImage(named: firstPhoto) {
+            return docImage
+        }
+        return nil
+    }
+
     var body: some View {
         ZStack(alignment: .bottomLeading) {
             ZStack {
-                if let filename = mountain.image, let docImage = ImageStore.loadImage(named: filename) {
-                    Image(uiImage: docImage)
+                if let image = userImage {
+                    Image(uiImage: image)
                         .resizable()
                         .scaledToFill()
-                        .frame(height: 180)
-                        .clipped()
-                } else if let name = assetImageName() {
-                    Image(name)
-                        .resizable()
-                        .scaledToFill()
-                        .frame(height: 180)
+                        .frame(height: 200)
                         .clipped()
                 } else {
                     let gradient = mountain.isCompleted
-                        ? Gradient(colors: [.green, .blue])
-                        : Gradient(colors: [Color.red.opacity(0.2), Color.red.opacity(0.4)])
+                        ? LinearGradient(colors: [.green.opacity(0.8), .blue.opacity(0.8)], startPoint: .topLeading, endPoint: .bottomTrailing)
+                        : LinearGradient(colors: [Color(.systemGray4), Color(.systemGray6)], startPoint: .topLeading, endPoint: .bottomTrailing)
 
-                    LinearGradient(
-                        gradient: gradient,
-                        startPoint: .top,
-                        endPoint: .bottom
-                    )
-                    .frame(height: 180)
-                    .overlay(
-                        Image(systemName: "mountain.2.fill")
-                            .font(.system(size: 60))
-                            .foregroundColor(.white.opacity(0.9))
-                    )
+                    gradient
+                        .frame(height: 200)
+                        .overlay(
+                            Image(systemName: "mountain.2.fill")
+                                .font(.system(size: 55))
+                                .foregroundStyle(.white.opacity(mountain.isCompleted ? 0.9 : 0.4))
+                        )
                 }
             }
-            .cornerRadius(16)
+            .cornerRadius(20)
 
-            
+            // Bottom gradient overlay for legible text
             LinearGradient(
-                gradient: Gradient(colors: [.black.opacity(0.6), .clear]),
+                colors: [.black.opacity(0.75), .black.opacity(0.2), .clear],
                 startPoint: .bottom,
-                endPoint: .center
+                endPoint: .top
             )
-            .cornerRadius(16)
+            .cornerRadius(20)
             
-            VStack(alignment: .leading, spacing: 6) {
-                Text(mountain.name)
-                    .font(.headline)
-                    .foregroundColor(.white)
-                Text("\(mountain.elevation) ft")
-                    .font(.subheadline)
+            // Text metadata
+            VStack(alignment: .leading, spacing: 4) {
+                Text(mountain.location.uppercased())
+                    .font(.caption2.bold())
+                    .tracking(1)
                     .foregroundColor(.white.opacity(0.8))
+                
+                Text(mountain.name)
+                    .font(.title3.bold())
+                    .foregroundColor(.white)
+                
+                HStack(spacing: 6) {
+                    Label("\(mountain.elevation) ft", systemImage: "arrow.up.forward")
+                        .font(.subheadline)
+                        .foregroundColor(.white.opacity(0.9))
+                    
+                    if mountain.isCompleted {
+                        Text("•")
+                            .foregroundColor(.white.opacity(0.6))
+                        Label("Completed", systemImage: "checkmark.circle.fill")
+                            .font(.subheadline)
+                            .foregroundColor(.green)
+                    }
+                }
             }
-            .padding()
+            .padding(16)
             
             VStack {
                 HStack {
                     Spacer()
                     Button(action: onToggleCompleted) {
                         Image(systemName: mountain.isCompleted ? "mountain.2.fill" : "mountain.2")
+                            .font(.system(size: 16, weight: .bold))
                             .foregroundColor(mountain.isCompleted ? .green : .white)
                             .padding(10)
-                            .background(Color.black.opacity(0.5))
+                            .background(.ultraThinMaterial)
                             .clipShape(Circle())
+                            .shadow(color: Color.black.opacity(0.2), radius: 4, x: 0, y: 2)
                     }
+                    .buttonStyle(.plain)
+                    .accessibilityIdentifier("CompletionToggle")
                 }
                 Spacer()
             }
-            .padding()
+            .padding(12)
         }
-        .padding(.horizontal)
-        .shadow(radius: 4)
-    }
-    
-    private func assetImageName() -> String? {
-        // 1) If the explicit image field is set and exists in assets, use it
-        if let explicit = mountain.image, UIImage(named: explicit) != nil {
-            return explicit
-        }
-
-        // 2) Try to derive a likely asset name from the mountain's name
-        let raw = mountain.name.lowercased()
-        // Keep only letters, numbers, and spaces
-        let allowed = raw.unicodeScalars.filter { CharacterSet.alphanumerics.union(.whitespaces).contains($0) }
-        let cleaned = String(String.UnicodeScalarView(allowed)).trimmingCharacters(in: .whitespaces)
-
-        // Build base variants by removing common prefixes/suffixes like "mount", "mt", and "mountain"
-        var bases: [String] = []
-        bases.append(cleaned)
-
-        let removedMount = cleaned
-            .replacingOccurrences(of: "mountain", with: "", options: .caseInsensitive)
-            .replacingOccurrences(of: "mount", with: "", options: .caseInsensitive)
-            .replacingOccurrences(of: "mt", with: "", options: .caseInsensitive)
-            .replacingOccurrences(of: "  ", with: " ")
-            .trimmingCharacters(in: .whitespaces)
-        if !removedMount.isEmpty { bases.append(removedMount) }
-
-        // Generate candidate forms for each base (spaces, underscores, hyphens, removed spaces)
-        var candidates: [String] = []
-        for base in bases {
-            let b = base
-            candidates.append(b)
-            candidates.append(b.replacingOccurrences(of: " ", with: "_"))
-            candidates.append(b.replacingOccurrences(of: " ", with: "-"))
-            candidates.append(b.replacingOccurrences(of: " ", with: ""))
-
-            // Also try with common prefixes
-            let withMount = "mount " + b
-            candidates.append(withMount)
-            candidates.append(withMount.replacingOccurrences(of: " ", with: "_"))
-            candidates.append(withMount.replacingOccurrences(of: " ", with: "-"))
-            candidates.append(withMount.replacingOccurrences(of: " ", with: ""))
-
-            let withMt = "mt " + b
-            candidates.append(withMt)
-            candidates.append(withMt.replacingOccurrences(of: " ", with: "_"))
-            candidates.append(withMt.replacingOccurrences(of: " ", with: "-"))
-            candidates.append(withMt.replacingOccurrences(of: " ", with: ""))
-
-            // And with a common suffix
-            let withMountain = b + " mountain"
-            candidates.append(withMountain)
-            candidates.append(withMountain.replacingOccurrences(of: " ", with: "_"))
-            candidates.append(withMountain.replacingOccurrences(of: " ", with: "-"))
-            candidates.append(withMountain.replacingOccurrences(of: " ", with: ""))
-        }
-
-        // Deduplicate and check which candidate actually exists in the asset catalog
-        var seen = Set<String>()
-        for candidate in candidates {
-            let c = candidate.lowercased()
-            if seen.insert(c).inserted {
-                if UIImage(named: c) != nil { return c }
-            }
-        }
-        return nil
+        .padding(.horizontal, 4)
+        .shadow(color: Color.black.opacity(0.08), radius: 10, x: 0, y: 4)
     }
 }
-
-
-extension Image {
-    init(mountainImageName: String?, fallback: String = "mountain.fallback") {
-        if let name = mountainImageName, UIImage(named: name) != nil {
-            self.init(name) // image exists in assets
-        } else {
-            self.init(systemName: fallback) // fallback to SF Symbol
-        }
-    }
-}
-

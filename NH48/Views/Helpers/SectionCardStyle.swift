@@ -3,16 +3,15 @@ import SwiftUI
 struct SectionCardStyle: ViewModifier {
     func body(content: Content) -> some View {
         content
-            .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
-            .listRowBackground(
-                RoundedRectangle(cornerRadius: 16, style: .continuous)
-                    .fill(
-                        LinearGradient(colors: [Color(.secondarySystemBackground).opacity(0.9), Color(.systemBackground).opacity(0.9)], startPoint: .topLeading, endPoint: .bottomTrailing)
-                    )
-            )
+            .padding(16)
+            .background(.regularMaterial)
+            .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+            .shadow(color: Color.black.opacity(0.05), radius: 8, x: 0, y: 2)
     }
 }
 
 extension View {
-    func sectionCardStyle() -> some View { modifier(SectionCardStyle()) }
+    func sectionCardStyle() -> some View { 
+        modifier(SectionCardStyle()) 
+    }
 }

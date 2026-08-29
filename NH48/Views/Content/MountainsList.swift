@@ -3,7 +3,7 @@ import MapKit
 
 struct MountainsList: View {
     let filteredMountains: [Mountain]
-    let store: MountainStore
+    @ObservedObject var store: MountainStore
     
     var body: some View {
         VStack(spacing: 12) {
@@ -36,12 +36,7 @@ struct MountainsList: View {
                 }
                 
                 ForEach(filteredMountains) { mountain in
-                    NavigationLink(destination: MountainDetailView(mountain: mountain) { updatedMountain in
-                        if let index = store.mountains.firstIndex(where: { $0.id == updatedMountain.id }) {
-                            store.mountains[index] = updatedMountain
-                            store.saveData()
-                        }
-                    }) {
+                    NavigationLink(value: mountain) {
                         MountainCardView(mountain: mountain) {
                             if let index = store.mountains.firstIndex(where: { $0.id == mountain.id }) {
                                 store.mountains[index].isCompleted.toggle()
@@ -49,15 +44,23 @@ struct MountainsList: View {
                             }
                         }
                         .padding(.horizontal, 4)
-                        .contextMenu {
-                            MountainContextMenu(mountain: mountain, store: store)
-                        }
                     }
                     .buttonStyle(PlainButtonStyle())
+                    .contextMenu {
+                        MountainContextMenu(mountain: mountain, store: store)
+                    }
                 }
             }
             .padding(.vertical, 12)
             .padding(.horizontal, 12)
+        }
+        .navigationDestination(for: Mountain.self) { mountain in
+            MountainDetailView(mountain: mountain) { updatedMountain in
+                if let index = store.mountains.firstIndex(where: { $0.id == updatedMountain.id }) {
+                    store.mountains[index] = updatedMountain
+                    store.saveData()
+                }
+            }
         }
         .background(
             RoundedRectangle(cornerRadius: 24, style: .continuous)

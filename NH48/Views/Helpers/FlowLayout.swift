@@ -1,43 +1,47 @@
 import SwiftUI
 
-// Simple flow layout for chips
-struct FlowLayout<Data: RandomAccessCollection, Content: View>: View where Data.Element: Hashable {
-    let items: Data
-    let content: (Data.Element) -> Content
+struct FlowLayout: Layout {
+    var spacing: CGFloat = 6
 
-    init(items: Data, @ViewBuilder content: @escaping (Data.Element) -> Content) {
-        self.items = items
-        self.content = content
+    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
+        let result = FlowResult(in: proposal.width ?? 0, subviews: subviews, spacing: spacing)
+        return result.bounds
     }
 
-    var body: some View {
-        var width: CGFloat = 0
-        var height: CGFloat = 0
+    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
+        let result = FlowResult(in: bounds.width, subviews: subviews, spacing: spacing)
+        for (index, subview) in subviews.enumerated() {
+            let point = result.positions[index]
+            subview.place(at: CGPoint(x: bounds.minX + point.x, y: bounds.minY + point.y), proposal: .unspecified)
+        }
+    }
 
-        return GeometryReader { geometry in
-            ZStack(alignment: .topLeading) {
-                ForEach(Array(items), id: \.self) { item in
-                    content(item)
-                        .fixedSize()
-                        .padding(4)
-                        .alignmentGuide(.leading) { d in
-                            if (abs(width - d.width) > geometry.size.width) {
-                                width = 0
-                                height -= d.height
-                            }
-                            let result = width
-                            if item == items.last { width = 0 } else { width -= d.width }
-                            return result
-                        }
-                        .alignmentGuide(.top) { d in
-                            let result = height
-                            if item == items.last { height = 0 } else { }
-                            return result
-                        }
+    private struct FlowResult {
+        var bounds = CGSize.zero
+        var positions: [CGPoint] = []
+
+        init(in maxRowWidth: CGFloat, subviews: LayoutSubviews, spacing: CGFloat) {
+            var currentX: CGFloat = 0
+            var currentY: CGFloat = 0
+            var lineHeight: CGFloat = 0
+
+            for subview in subviews {
+                let size = subview.sizeThatFits(.unspecified)
+
+                if currentX + size.width > maxRowWidth, currentX > 0 {
+                    currentX = 0
+                    currentY += lineHeight + spacing
+                    lineHeight = 0
                 }
+
+                positions.append(CGPoint(x: currentX, y: currentY))
+
+                lineHeight = max(lineHeight, size.height)
+                currentX += size.width + spacing
+
+                bounds.width = max(bounds.width, currentX)
+                bounds.height = max(bounds.height, currentY + lineHeight)
             }
         }
-        .frame(minHeight: 0)
-        .fixedSize(horizontal: false, vertical: true)
     }
 }

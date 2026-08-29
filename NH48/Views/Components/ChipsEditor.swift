@@ -15,24 +15,35 @@ struct ChipsEditor: View {
 
             // Chips
             if !items.isEmpty {
-                FlowLayout(items: items) { item in
+                ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 6) {
-                        Text(item)
-                            .font(.caption)
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 4)
-                            .background(Color.blue.opacity(0.15))
+                        ForEach(items, id: \.self) { item in
+                            HStack(spacing: 0) {
+                                Text(item)
+                                    .font(.caption)
+                                    .padding(.leading, 10)
+                                    .padding(.trailing, 4)
+                                    .padding(.vertical, 4)
+                                    .foregroundColor(.primary)
+                                
+                                // Reliable tap target for deleting
+                                Image(systemName: "xmark.circle.fill")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary.opacity(0.7))
+                                    .padding(.vertical, 6)
+                                    .padding(.trailing, 8)
+                                    .padding(.leading, 4)
+                                    .contentShape(Rectangle())
+                                    .accessibilityIdentifier("DeleteTag-\(item)") // Added for UI testing
+                                    .onTapGesture {
+                                        remove(item)
+                                    }
+                            }
+                            .background(Color.blue.opacity(0.12))
                             .clipShape(Capsule())
-                        Button(action: { remove(item) }) {
-                            Image(systemName: "xmark.circle.fill")
-                                .font(.caption)
-                                .padding(4)
-                                .background(Circle().fill(Color.black.opacity(0.15)))
                         }
-                        .buttonStyle(.plain)
-                        .contentShape(Circle())
                     }
-                    .fixedSize()
+                    .padding(.horizontal, 1)
                 }
                 .padding(.bottom, 4)
             }
@@ -40,10 +51,13 @@ struct ChipsEditor: View {
             HStack(spacing: 8) {
                 TextField("Add \(title.lowercased())", text: $input)
                     .textInputAutocapitalization(.words)
+                    .accessibilityIdentifier("TagInput-\(title)") // Added for UI testing
+                
                 Button(action: add) {
                     Image(systemName: "plus.circle.fill")
                 }
                 .disabled(input.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                .accessibilityIdentifier("AddTagButton-\(title)") // Added for UI testing
             }
             .padding(.horizontal, 12)
             .padding(.vertical, 10)

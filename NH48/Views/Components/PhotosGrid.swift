@@ -6,7 +6,11 @@ struct PhotosGrid: View {
     @State private var selectedPhotoItems: [PhotosPickerItem] = []
 
     var body: some View {
-        Section(header: Text("Photos").font(.footnote).foregroundColor(.secondary)) {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Photos")
+                .font(.footnote)
+                .foregroundColor(.secondary)
+
             PhotosPicker(selection: $selectedPhotoItems, maxSelectionCount: 10, matching: .images) {
                 Label("Add Photos", systemImage: "photo.on.rectangle")
                     .frame(maxWidth: .infinity)

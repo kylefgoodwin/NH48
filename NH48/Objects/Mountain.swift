@@ -7,14 +7,14 @@
 
 import Foundation
 
-struct Mountain: Identifiable, Codable, Equatable {
+struct Mountain: Identifiable, Codable, Equatable, Hashable {
     var id = UUID()
     var name: String
     var elevation: Int
     var location: String
-    var description: String?
-    var latitude: Double?
-    var longitude: Double?
+    var description: String? = nil   // Added default value
+    var latitude: Double? = nil      // Added default value
+    var longitude: Double? = nil     // Added default value
     var isCompleted: Bool
     var image: String? = nil
 
@@ -30,4 +30,3 @@ struct Mountain: Identifiable, Codable, Equatable {
     var tags: [String] = []
     var photoFileNames: [String] = []
 }
-

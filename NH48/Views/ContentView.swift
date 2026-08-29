@@ -1,5 +1,24 @@
 import SwiftUI
 
+// MARK: - Enums for Filtering and Sorting
+enum MountainFilter: String, CaseIterable, Identifiable {
+    case all = "All"
+    case completed = "Completed"
+    case notCompleted = "Not Completed"
+    case range = "Mountain Range"
+    
+    var id: String { rawValue }
+}
+
+enum SortOption: String, CaseIterable, Identifiable {
+    case elevationDescending = "Elevation ↓"
+    case elevationAscending = "Elevation ↑"
+    case name = "Name"
+    case completedFirst = "Completed"
+    
+    var id: String { rawValue }
+}
+
 struct ContentView: View {
     @StateObject private var store = MountainStore()
     @State private var searchText = ""
@@ -8,48 +27,25 @@ struct ContentView: View {
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     
     @AppStorage("defaultSortOption") private var defaultSortOptionRaw: String = SortOption.elevationDescending.rawValue
-    @AppStorage("hasFetchedImagesOnce") private var hasFetchedImagesOnce: Bool = false
-    @AppStorage("lastMountainCount") private var lastMountainCount: Int = 0
     
     var uniqueRanges: [String] {
         Array(Set(store.mountains.map { $0.location })).sorted()
     }
     
-    enum MountainFilter: String, CaseIterable, Identifiable {
-        case all = "All"
-        case completed = "Completed"
-        case notCompleted = "Not Completed"
-        case range = "Mountain Range"
-        
-        var id: String { rawValue }
-    }
-    
-    private func label(for filter: MountainFilter) -> String {
-        if horizontalSizeClass == .compact {
-            switch filter {
-            case .all: return "All"
-            case .completed: return "Done"
-            case .notCompleted: return "To Do"
-            case .range: return "Range"
-            }
-        } else {
-            return filter.rawValue
-        }
-    }
-    
-    enum SortOption: String, CaseIterable, Identifiable {
-        case elevationDescending = "Elevation ↓"
-        case elevationAscending = "Elevation ↑"
-        case name = "Name"
-        case completedFirst = "Completed"
-        var id: String { rawValue }
-    }
-    
     @State private var selectedFilter: MountainFilter = .all
     @State private var sortOption: SortOption = .elevationDescending
     
+    private struct ProgressInfo { let completedInt: Int; let totalInt: Int; let progress: Double }
+    
+    private func makeProgressInfo(from mountains: [Mountain]) -> ProgressInfo {
+        let completedInt: Int = mountains.reduce(0) { $0 + ($1.isCompleted ? 1 : 0) }
+        let totalInt: Int = mountains.count
+        let progress: Double = totalInt > 0 ? Double(completedInt) / Double(totalInt) : 0
+        return ProgressInfo(completedInt: completedInt, totalInt: totalInt, progress: progress)
+    }
+    
     var filteredMountains: [Mountain] {
-        let baseList = store.mountains.filter { mountain in
+        let baseList: [Mountain] = store.mountains.filter { mountain in
             switch selectedFilter {
             case .all:
                 return true
@@ -64,113 +60,115 @@ struct ContentView: View {
                 return true
             }
         }
-        
-        let searched = searchText.isEmpty
-            ? baseList
-            : baseList.filter { $0.name.lowercased().contains(searchText.lowercased()) }
-        
-        let sorted = searched.sorted {
-            switch sortOption {
-            case .elevationDescending:
-                return $0.elevation > $1.elevation
-            case .elevationAscending:
-                return $0.elevation < $1.elevation
-            case .name:
-                return $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending
-            case .completedFirst:
-                if $0.isCompleted != $1.isCompleted {
-                    return $0.isCompleted && !$1.isCompleted
-                }
-                return $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending
+
+        let searched: [Mountain]
+        if searchText.isEmpty {
+            searched = baseList
+        } else {
+            let needle = searchText.lowercased()
+            searched = baseList.filter { $0.name.lowercased().contains(needle) }
+        }
+
+        let sorted: [Mountain] = searched.sorted(by: mountainSortComparator)
+        return sorted
+    }
+
+    private func mountainSortComparator(_ lhs: Mountain, _ rhs: Mountain) -> Bool {
+        switch sortOption {
+        case .elevationDescending:
+            return lhs.elevation > rhs.elevation
+        case .elevationAscending:
+            return lhs.elevation < rhs.elevation
+        case .name:
+            return lhs.name.localizedCaseInsensitiveCompare(rhs.name) == .orderedAscending
+        case .completedFirst:
+            if lhs.isCompleted != rhs.isCompleted {
+                return lhs.isCompleted && !rhs.isCompleted
+            }
+            return lhs.name.localizedCaseInsensitiveCompare(rhs.name) == .orderedAscending
+        }
+    }
+    
+    private struct MainContent: View {
+        @Binding var selectedFilter: MountainFilter
+        @Binding var selectedRange: String?
+        @Binding var sortOption: SortOption
+        @Binding var searchText: String
+        let uniqueRanges: [String]
+        let progressInfo: ProgressInfo
+        @ObservedObject var store: MountainStore
+        var onAddTap: () -> Void
+
+        var body: some View {
+            VStack(spacing: 16) {
+                ContentViewHeader(
+                    selectedFilter: $selectedFilter,
+                    selectedRange: $selectedRange,
+                    sortOption: $sortOption,
+                    uniqueRanges: uniqueRanges,
+                    onAddTap: onAddTap
+                )
+
+                SearchBar(
+                    searchText: $searchText,
+                    sortOption: $sortOption,
+                    selectedFilter: $selectedFilter,
+                    selectedRange: $selectedRange,
+                    uniqueRanges: uniqueRanges
+                )
+
+                ProgressSection(
+                    completedInt: progressInfo.completedInt,
+                    totalInt: progressInfo.totalInt,
+                    progress: progressInfo.progress
+                )
+
+                CompletionChart(store: store)
             }
         }
-        return sorted
     }
     
     var body: some View {
-        NavigationStack {
-            ScrollView {
-                let completedInt = store.mountains.filter { $0.isCompleted }.count
-                let totalInt = store.mountains.count
-                let completed = Double(completedInt)
-                let total = Double(totalInt)
-                let progress = total > 0 ? completed / total : 0
-                
-                VStack(spacing: 16) {
-                    ContentViewHeader()
-                    
-                    Text("Welcome back!")
-                        .font(.title2.weight(.semibold))
-                        .tracking(0.5)
-                        .foregroundStyle(.white.opacity(0.8))
-                        .frame(maxWidth: .infinity, alignment: .center)
-                    
-                    SearchBar(searchText: $searchText)
-                    
-                    FilterControls(
-                        selectedFilter: $selectedFilter,
-                        selectedRange: $selectedRange,
-                        sortOption: $sortOption,
-                        label: label,
-                        uniqueRanges: uniqueRanges
-                    )
-                    
-                    ProgressSection(
-                        completedInt: completedInt,
-                        totalInt: totalInt,
-                        progress: progress
-                    )
-                    
-                    CompletionChart(store: store)
-                }
-                .padding(.horizontal)
-                .frame(maxWidth: .infinity)
-                .onChange(of: selectedFilter) { newValue in
-                    if newValue == .range, selectedRange == nil {
-                        selectedRange = uniqueRanges.first
-                    }
-                }
-                .onChange(of: sortOption) { newValue in
-                    defaultSortOptionRaw = newValue.rawValue
-                }
-                .onAppear {
-                    if let restored = SortOption.allCases.first(where: { $0.rawValue == defaultSortOptionRaw }) {
-                        sortOption = restored
-                    }
-                }
-                .padding(.bottom, 8)
-                
-                MountainsList(
-                    filteredMountains: filteredMountains,
-                    store: store
-                )
-            }
-            .safeAreaPadding(.top)
-            .background(ContentViewBackground())
-            .task {
-                let hasMissing: Bool = store.mountains.contains { m in
-                    guard let name = m.image else { return true }
-                    return ImageStore.loadImage(named: name) == nil && UIImage(named: name) == nil
-                }
-                if !hasFetchedImagesOnce || store.mountains.count > lastMountainCount || hasMissing {
-                    await store.fetchMissingImagesFromWeb()
-                    hasFetchedImagesOnce = true
-                    lastMountainCount = store.mountains.count
-                } else if lastMountainCount == 0 {
-                    lastMountainCount = store.mountains.count
+        ScrollView {
+            let progressInfo: ProgressInfo = makeProgressInfo(from: store.mountains)
+
+            MainContent(
+                selectedFilter: $selectedFilter,
+                selectedRange: $selectedRange,
+                sortOption: $sortOption,
+                searchText: $searchText,
+                uniqueRanges: uniqueRanges,
+                progressInfo: progressInfo,
+                store: store,
+                onAddTap: { showAddMountainSheet = true }
+            )
+            .padding(.horizontal)
+            .frame(maxWidth: .infinity)
+            .onChange(of: selectedFilter) { _, newValue in
+                if newValue == .range, selectedRange == nil {
+                    selectedRange = uniqueRanges.first
                 }
             }
-            .onChange(of: store.mountains.count) { newCount in
-                if newCount > lastMountainCount {
-                    Task {
-                        await store.fetchMissingImagesFromWeb()
-                        lastMountainCount = newCount
-                    }
+            .onChange(of: sortOption) { _, newValue in
+                defaultSortOptionRaw = newValue.rawValue
+            }
+            .onAppear {
+                if let restored = SortOption.allCases.first(where: { $0.rawValue == defaultSortOptionRaw }) {
+                    sortOption = restored
                 }
             }
-            .sheet(isPresented: $showAddMountainSheet) {
-                AddMountainView(store: store)
-            }
+            .padding(.bottom, 8)
+            
+            MountainsList(
+                filteredMountains: filteredMountains,
+                store: store
+            )
+        }
+        .safeAreaPadding(.top)
+        .background(ContentViewBackground())
+        .navigationBarHidden(true)
+        .sheet(isPresented: $showAddMountainSheet) {
+            AddMountainView(store: store)
         }
     }
 }

@@ -3,29 +3,53 @@ import SwiftUI
 struct MountainTrackerView: View {
     @Binding var mountain: Mountain
 
+    private var personalNotesBinding: Binding<String> {
+        Binding(
+            get: { mountain.personalNotes ?? "" },
+            set: { mountain.personalNotes = $0.isEmpty ? nil : $0 }
+        )
+    }
+
+    private var conditionsBinding: Binding<[String]> {
+        Binding(
+            get: { mountain.conditions ?? [] },
+            set: { mountain.conditions = $0 }
+        )
+    }
+
     var body: some View {
-        List {
+        VStack(spacing: 16) {
             // Trip Log
-            Section(header: Text("Trip Log").foregroundColor(.secondary)) {
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Trip Log")
+                    .font(.footnote)
+                    .foregroundColor(.secondary)
                 CompletionDateInput(mountain: $mountain)
                 RatingDifficultyInputs(mountain: $mountain)
             }
             .sectionCardStyle()
 
             // Hike Stats
-            Section(header: Text("Hike Stats").font(.footnote).foregroundColor(.secondary)) {
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Hike Stats")
+                    .font(.footnote)
+                    .foregroundColor(.secondary)
                 HikeStatsInputs(mountain: $mountain)
             }
             .sectionCardStyle()
 
             // Notes & Tags
-            Section(header: Text("Notes & Tags").font(.footnote).foregroundColor(.secondary)) {
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Notes & Tags")
+                    .font(.footnote)
+                    .foregroundColor(.secondary)
+
                 VStack(alignment: .leading, spacing: 6) {
                     HStack(spacing: 8) {
                         Image(systemName: "note.text").foregroundStyle(.secondary)
                         Text("Personal Notes").font(.caption).foregroundStyle(.secondary)
                     }
-                    TextEditor(text: Binding<String>(unwrapping: $mountain.personalNotes, default: ""))
+                    TextEditor(text: personalNotesBinding)
                         .frame(minHeight: 100)
                         .padding(10)
                         .background(.ultraThinMaterial)
@@ -39,7 +63,7 @@ struct MountainTrackerView: View {
 
                 ChipsEditor(title: "Conditions",
                             systemImage: "cloud.sun.rain",
-                            items: Binding<[String]>(unwrapping: $mountain.conditions, default: []))
+                            items: conditionsBinding)
                 .padding(.vertical, 2)
 
                 ChipsEditor(title: "Tags",
@@ -52,10 +76,5 @@ struct MountainTrackerView: View {
             // Photos
             PhotosGrid(mountain: $mountain)
         }
-        .listStyle(.insetGrouped)
-        .scrollContentBackground(.hidden)
-        .background(
-            LinearGradient(colors: [Color(.systemGroupedBackground), Color(.secondarySystemGroupedBackground)], startPoint: .top, endPoint: .bottom)
-        )
     }
 }

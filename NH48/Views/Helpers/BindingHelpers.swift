@@ -1,6 +1,5 @@
 import SwiftUI
 
-// Helper to convert optional bindings to non-optional with a default value
 extension Binding {
     /// Case 1: Binding to an optional value (Binding<Value?>)
     init(unwrapping source: Binding<Value?>, default defaultValue: Value) {

@@ -4,7 +4,11 @@ struct BasicInfoInputs: View {
     @Binding var mountain: Mountain
 
     var body: some View {
-        Section(header: Text("Basic Info").font(.footnote).foregroundColor(.secondary)) {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Basic Info")
+                .font(.footnote)
+                .foregroundColor(.secondary)
+
             VStack(alignment: .leading, spacing: 6) {
                 Text("Name").font(.caption).foregroundStyle(.secondary)
                 HStack(spacing: 10) {
@@ -23,6 +27,7 @@ struct BasicInfoInputs: View {
                 )
             }
             .padding(.vertical, 2)
+
             VStack(alignment: .leading, spacing: 6) {
                 Text("Location (range)").font(.caption).foregroundStyle(.secondary)
                 HStack(spacing: 10) {
@@ -41,12 +46,13 @@ struct BasicInfoInputs: View {
                 )
             }
             .padding(.vertical, 2)
+
             VStack(alignment: .leading, spacing: 6) {
                 Text("Elevation (ft)").font(.caption).foregroundStyle(.secondary)
                 HStack(spacing: 10) {
                     Image(systemName: "arrow.up.and.down")
                         .foregroundStyle(.secondary)
-                    TextField("Elevation (ft)", value: $mountain.elevation, formatter: NumberFormatter())
+                    TextField("Elevation (ft)", value: $mountain.elevation, format: .number)
                         .keyboardType(.numberPad)
                         .font(.body.monospacedDigit())
                 }

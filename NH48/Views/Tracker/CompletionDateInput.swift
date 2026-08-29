@@ -3,12 +3,19 @@ import SwiftUI
 struct CompletionDateInput: View {
     @Binding var mountain: Mountain
 
+    private var dateBinding: Binding<Date> {
+        Binding(
+            get: { mountain.completionDate ?? Date() },
+            set: { mountain.completionDate = $0 }
+        )
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
             Text("Completion Date").font(.caption).foregroundStyle(.secondary)
             DatePicker(
                 "",
-                selection: Binding<Date>(unwrapping: $mountain.completionDate, default: Date()),
+                selection: dateBinding,
                 displayedComponents: [.date]
             )
             .labelsHidden()

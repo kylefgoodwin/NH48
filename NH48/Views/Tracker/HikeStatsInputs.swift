@@ -9,7 +9,7 @@ struct HikeStatsInputs: View {
                 Text("Distance (miles)").font(.caption).foregroundStyle(.secondary)
                 HStack(spacing: 10) {
                     Image(systemName: "ruler").foregroundStyle(.secondary)
-                    TextField("Distance (miles)", value: Binding<Double>(unwrapping: $mountain.distanceMiles, default: 0.0), formatter: decimalFormatter)
+                    TextField("Distance (miles)", value: $mountain.distanceMiles, format: .number)
                         .keyboardType(.decimalPad)
                         .font(.body.monospacedDigit())
                 }
@@ -23,11 +23,12 @@ struct HikeStatsInputs: View {
                 )
             }
             .padding(.vertical, 2)
+
             VStack(alignment: .leading, spacing: 6) {
                 Text("Elevation Gain (ft)").font(.caption).foregroundStyle(.secondary)
                 HStack(spacing: 10) {
                     Image(systemName: "arrow.up").foregroundStyle(.secondary)
-                    TextField("Elevation Gain (ft)", value: Binding<Int>(unwrapping: $mountain.elevationGain, default: 0), formatter: integerFormatter)
+                    TextField("Elevation Gain (ft)", value: $mountain.elevationGain, format: .number)
                         .keyboardType(.numberPad)
                         .font(.body.monospacedDigit())
                 }
@@ -41,11 +42,12 @@ struct HikeStatsInputs: View {
                 )
             }
             .padding(.vertical, 2)
+
             VStack(alignment: .leading, spacing: 6) {
                 Text("Duration (minutes)").font(.caption).foregroundStyle(.secondary)
                 HStack(spacing: 10) {
                     Image(systemName: "clock").foregroundStyle(.secondary)
-                    TextField("Duration (minutes)", value: Binding<Int>(unwrapping: $mountain.durationMinutes, default: 0), formatter: integerFormatter)
+                    TextField("Duration (minutes)", value: $mountain.durationMinutes, format: .number)
                         .keyboardType(.numberPad)
                         .font(.body.monospacedDigit())
                 }
