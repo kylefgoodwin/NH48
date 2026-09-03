@@ -31,34 +31,3 @@ struct PhotosGrid: View {
         }
     }
 }
-
-struct PhotoThumbnail: View {
-    let filename: String
-    @Binding var mountain: Mountain
-
-    var body: some View {
-        ZStack(alignment: .topTrailing) {
-            if let image = ImageStore.loadImage(named: filename) {
-                Image(uiImage: image)
-                    .resizable()
-                    .scaledToFill()
-                    .frame(width: 80, height: 80)
-                    .clipped()
-                    .clipShape(RoundedRectangle(cornerRadius: 8))
-            }
-
-            Button {
-                if let idx = mountain.photoFileNames.firstIndex(of: filename) {
-                    mountain.photoFileNames.remove(at: idx)
-                    ImageStore.deleteImage(named: filename)
-                }
-            } label: {
-                Image(systemName: "xmark.circle.fill")
-                    .foregroundColor(.white)
-                    .background(Circle().fill(Color.black.opacity(0.6)))
-            }
-            .buttonStyle(.plain)
-            .offset(x: 4, y: -4)
-        }
-    }
-}

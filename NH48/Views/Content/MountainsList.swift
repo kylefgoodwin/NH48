@@ -22,7 +22,7 @@ struct MountainsList: View {
             }
             .padding(.horizontal, 8)
             
-            LazyVStack(spacing: 12) {
+            LazyVGrid(columns: [GridItem(.adaptive(minimum: 160), spacing: 12)], spacing: 12) {
                 if filteredMountains.isEmpty {
                     VStack(spacing: 6) {
                         Image(systemName: "magnifyingglass")
@@ -32,13 +32,14 @@ struct MountainsList: View {
                     }
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 24)
+                    .gridCellColumns(2)
                 } else {
                     ForEach(filteredMountains) { mountain in
                         NavigationLink(value: mountain) {
                             MountainCardView(mountain: mountain) {
                                 store.toggleCompletion(for: mountain)
                             }
-                            .padding(.horizontal, 4)
+                            .frame(maxWidth: .infinity)
                         }
                         .buttonStyle(PlainButtonStyle())
                         .contextMenu {
@@ -72,27 +73,5 @@ struct MountainsList: View {
         .shadow(color: Color.black.opacity(0.08), radius: 12, x: 0, y: -2)
         .padding(.horizontal, 12)
         .padding(.top, -8)
-    }
-}
-
-struct MountainContextMenu: View {
-    let mountain: Mountain
-    @ObservedObject var store: MountainStore
-    
-    var body: some View {
-        Button {
-            store.toggleCompletion(for: mountain)
-        } label: {
-            Label(
-                mountain.isCompleted ? "Mark as Uncompleted" : "Mark as Completed",
-                systemImage: mountain.isCompleted ? "circle" : "checkmark.circle"
-            )
-        }
-        
-        Button(role: .destructive) {
-            store.delete(mountain)
-        } label: {
-            Label("Delete Mountain", systemImage: "trash")
-        }
     }
 }

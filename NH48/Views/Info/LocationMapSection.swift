@@ -13,11 +13,15 @@ struct LocationMapSection: View {
 
     var body: some View {
         if let coordinate = validCoordinate {
-            VStack(alignment: .leading, spacing: 12) {
-                Text("Map Location")
-                    .font(.system(.headline, design: .rounded, weight: .bold))
-                    .foregroundColor(.primary)
-                    .padding(.leading, 8)
+            VStack(alignment: .leading, spacing: 8) {
+                HStack(spacing: 8) {
+                    Image(systemName: "map.fill")
+                        .foregroundColor(.blue)
+                        .font(.headline)
+                    Text("Map Location")
+                        .font(.headline)
+                        .foregroundColor(.primary)
+                }
 
                 Map(initialPosition: .region(MKCoordinateRegion(
                     center: coordinate,
@@ -27,26 +31,17 @@ struct LocationMapSection: View {
                         ZStack {
                             Circle()
                                 .fill(Color.blue.opacity(0.3))
-                                .frame(width: 32, height: 32)
-                                .blur(radius: 4)
-                                .offset(y: 2)
-                            Circle().fill(.blue).frame(width: 18, height: 18)
-                            Circle().stroke(.white, lineWidth: 3).frame(width: 18, height: 18)
+                                .frame(width: 28, height: 28)
+                                .blur(radius: 3)
+                            Circle().fill(.blue).frame(width: 16, height: 16)
+                            Circle().stroke(.white, lineWidth: 2.5).frame(width: 16, height: 16)
                         }
-                        .shadow(color: Color.blue.opacity(0.33), radius: 8, y: 2)
                     }
                 }
-                .frame(height: 180)
-                .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
-                .shadow(color: Color.black.opacity(0.08), radius: 8, x: 0, y: 4)
+                .frame(height: 160)
+                .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
             }
-            .padding(16)
-            .background(
-                RoundedRectangle(cornerRadius: 24, style: .continuous)
-                    .fill(.ultraThinMaterial)
-                    .shadow(color: Color.black.opacity(0.10), radius: 18, x: 0, y: 10)
-            )
-            .padding(.vertical, 10)
+            .sectionCardStyle()
         }
     }
 }

@@ -19,55 +19,45 @@ struct RatingDifficultyInputs: View {
             set: { mountain.difficulty = $0 }
         )
     }
-    
-    private let difficultyLevels: [(level: Int, label: String, color: Color)] = [
-        (1, "Easy", .green),
-        (2, "Moderate", .teal),
-        (3, "Challenging", .blue),
-        (4, "Hard", .orange),
-        (5, "Extreme", .red)
+
+    private let difficultyLevels: [(level: Int, label: String, color: Color, icon: String)] = [
+        (1, "Easy", .green, "leaf.fill"),
+        (2, "Moderate", .teal, "figure.walk"),
+        (3, "Challenging", .blue, "figure.hiking"),
+        (4, "Hard", .orange, "flame.fill"),
+        (5, "Extreme", .red, "bolt.fill")
     ]
-    
+
     private func starView(for star: Int) -> some View {
-        Image(systemName: ratingBinding.wrappedValue >= star ? "star.fill" : "star")
-            .resizable()
-            .aspectRatio(contentMode: .fit)
-            .frame(width: 32, height: 32)
-            .foregroundStyle(ratingBinding.wrappedValue >= star
-                ? AnyShapeStyle(LinearGradient(colors: [Color.yellow, Color.orange], startPoint: .top, endPoint: .bottom))
-                : AnyShapeStyle(Color.gray.opacity(0.22)))
-            .shadow(color: ratingBinding.wrappedValue >= star ? Color.yellow.opacity(0.34) : Color.clear, radius: 4, y: 2)
-            .padding(4)
-            .contentShape(Rectangle())
-            .onTapGesture {
-                withAnimation(.spring(response: 0.25, dampingFraction: 0.8)) {
-                    ratingBinding.wrappedValue = star
-                    animateTap.toggle()
-                }
-                UIImpactFeedbackGenerator(style: .soft).impactOccurred()
+        let isSelected = ratingBinding.wrappedValue >= star
+        return Button {
+            withAnimation(.spring(response: 0.25, dampingFraction: 0.7)) {
+                ratingBinding.wrappedValue = star
+                animateTap.toggle()
             }
-            .onLongPressGesture(minimumDuration: 0.4) {
-                withAnimation(.spring(response: 0.25, dampingFraction: 0.9)) {
-                    ratingBinding.wrappedValue = 0
-                }
-                UINotificationFeedbackGenerator().notificationOccurred(.warning)
-            }
-            .accessibilityLabel("Set rating to \(star) stars")
+            UIImpactFeedbackGenerator(style: .soft).impactOccurred()
+        } label: {
+            Image(systemName: isSelected ? "star.fill" : "star")
+                .font(.system(size: 26, weight: .semibold))
+                .foregroundStyle(
+                    isSelected
+                    ? AnyShapeStyle(LinearGradient(colors: [Color.yellow, Color.orange], startPoint: .top, endPoint: .bottom))
+                    : AnyShapeStyle(Color.primary.opacity(0.18))
+                )
+                .shadow(color: isSelected ? Color.orange.opacity(0.3) : .clear, radius: 4, y: 2)
+                .scaleEffect(animateTap && ratingBinding.wrappedValue == star ? 1.15 : 1.0)
+                .frame(width: 36, height: 36)
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel("Set rating to \(star) stars")
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            // Rating Box
-            VStack(alignment: .leading, spacing: 6) {
-                InlineSectionLabel(systemImage: "star.fill", title: "Rating", color: .yellow)
-                HStack(spacing: 10) {
-                    HStack(spacing: 8) {
-                        ForEach(1...5, id: \.self) { star in
-                            starView(for: star)
-                                .scaleEffect(animateTap && ratingBinding.wrappedValue == star ? 1.08 : 1.0)
-                                .animation(.spring(response: 0.25, dampingFraction: 0.7), value: animateTap)
-                        }
-                    }
+        VStack(spacing: 14) {
+            // MARK: - Rating Card
+            VStack(alignment: .leading, spacing: 10) {
+                HStack {
+                    InlineSectionLabel(systemImage: "star.fill", title: "Rating", color: .yellow)
                     Spacer()
                     if ratingBinding.wrappedValue > 0 {
                         Button {
@@ -76,110 +66,109 @@ struct RatingDifficultyInputs: View {
                             }
                             UIImpactFeedbackGenerator(style: .soft).impactOccurred()
                         } label: {
-                            HStack(spacing: 4) {
+                            HStack(spacing: 3) {
                                 Image(systemName: "arrow.uturn.backward")
                                 Text("Reset")
-                                    .lineLimit(1)
-                                    .minimumScaleFactor(0.7)
                             }
-                            .font(.caption.weight(.semibold))
+                            .font(.caption.weight(.bold))
                         }
-                        .buttonStyle(.borderless)
-                        .layoutPriority(1)
                         .tint(.yellow)
-                        .accessibilityLabel("Reset rating")
+                        .buttonStyle(.borderless)
                     }
                 }
-                .padding(.horizontal, 12)
-                .padding(.vertical, 10)
-                .background(.ultraThinMaterial)
-                .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 14, style: .continuous)
-                        .stroke(Color.primary.opacity(0.08), lineWidth: 1)
-                )
-                .accessibilityElement(children: .combine)
-                .accessibilityLabel("Star rating")
-                .accessibilityValue("\(ratingBinding.wrappedValue) out of 5")
-            }
 
-            // Difficulty Box
-            VStack(alignment: .leading, spacing: 6) {
-                InlineSectionLabel(systemImage: "flame.fill", title: "Difficulty", color: .orange)
-                VStack(alignment: .leading, spacing: 10) {
-                    HStack(spacing: 10) {
-                        let selected = difficultyLevels.first { $0.level == difficultyBinding.wrappedValue } ?? difficultyLevels[2]
-                        Text(selected.label)
-                            .font(.headline.bold())
-                            .padding(.horizontal, 10)
-                            .padding(.vertical, 6)
-                            .background(RoundedRectangle(cornerRadius: 10, style: .continuous).fill(selected.color.gradient.opacity(0.22)))
-                            .foregroundColor(selected.color)
-                        Spacer()
-                        if difficultyBinding.wrappedValue != 3 {
-                            Button {
-                                withAnimation(.snappy) { difficultyBinding.wrappedValue = 3 }
-                                UIImpactFeedbackGenerator(style: .soft).impactOccurred()
-                            } label: {
-                                HStack(spacing: 4) {
-                                    Image(systemName: "arrow.uturn.backward")
-                                    Text("Reset")
-                                        .lineLimit(1)
-                                        .minimumScaleFactor(0.7)
-                                }
-                                .font(.caption.weight(.semibold))
-                            }
-                            .buttonStyle(.borderless)
-                            .layoutPriority(1)
-                            .tint(.orange)
-                            .accessibilityLabel("Reset difficulty")
+                HStack {
+                    HStack(spacing: 6) {
+                        ForEach(1...5, id: \.self) { star in
+                            starView(for: star)
                         }
                     }
-                    ScrollView(.horizontal, showsIndicators: false) {
-                        HStack(spacing: 8) {
-                            ForEach(difficultyLevels, id: \.level) { item in
-                                Button(action: {
-                                    withAnimation(.spring(response: 0.25, dampingFraction: 0.8)) {
-                                        difficultyBinding.wrappedValue = item.level
-                                        animateTap.toggle()
-                                    }
-                                    UIImpactFeedbackGenerator(style: .soft).impactOccurred()
-                                }) {
-                                    Text("\(item.level) \(item.label)")
-                                        .font(.subheadline.weight(.semibold))
-                                        .lineLimit(1)
-                                        .fixedSize(horizontal: true, vertical: false)
-                                        .foregroundStyle(difficultyBinding.wrappedValue == item.level ? Color.white : item.color)
-                                        .padding(.horizontal, 12)
-                                        .frame(height: 36)
-                                        .background(
-                                            RoundedRectangle(cornerRadius: 10, style: .continuous)
-                                                .fill(difficultyBinding.wrappedValue == item.level ? item.color : Color.primary.opacity(0.06))
-                                        )
-                                        .overlay(
-                                            RoundedRectangle(cornerRadius: 10, style: .continuous)
-                                                .stroke(difficultyBinding.wrappedValue == item.level ? item.color.opacity(0.9) : Color.primary.opacity(0.08), lineWidth: 1)
-                                        )
-                                        .shadow(color: item.color.opacity(difficultyBinding.wrappedValue == item.level ? 0.18 : 0), radius: 4, y: 2)
-                                }
-                                .buttonStyle(.plain)
-                                .accessibilityLabel("Set difficulty to \(item.label)")
+
+                    Spacer()
+
+                    Text(ratingBinding.wrappedValue > 0 ? "\(ratingBinding.wrappedValue) / 5" : "Unrated")
+                        .font(.system(.subheadline, design: .rounded).weight(.bold))
+                        .foregroundStyle(ratingBinding.wrappedValue > 0 ? .primary : .secondary)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 4)
+                        .background(
+                            Capsule()
+                                .fill(ratingBinding.wrappedValue > 0 ? Color.yellow.opacity(0.18) : Color.primary.opacity(0.05))
+                        )
+                }
+            }
+            .padding(12)
+            .background(.ultraThinMaterial)
+            .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+            .overlay(
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    .stroke(Color.primary.opacity(0.08), lineWidth: 1)
+            )
+
+            // MARK: - Difficulty Card
+            VStack(alignment: .leading, spacing: 10) {
+                HStack {
+                    InlineSectionLabel(systemImage: "flame.fill", title: "Difficulty", color: .orange)
+                    Spacer()
+                    if difficultyBinding.wrappedValue != 3 {
+                        Button {
+                            withAnimation(.snappy) { difficultyBinding.wrappedValue = 3 }
+                            UIImpactFeedbackGenerator(style: .soft).impactOccurred()
+                        } label: {
+                            HStack(spacing: 3) {
+                                Image(systemName: "arrow.uturn.backward")
+                                Text("Reset")
                             }
+                            .font(.caption.weight(.bold))
                         }
+                        .tint(.orange)
+                        .buttonStyle(.borderless)
                     }
                 }
-                .padding(.horizontal, 12)
-                .padding(.vertical, 10)
-                .background(.ultraThinMaterial)
-                .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 14, style: .continuous)
-                        .stroke(Color.primary.opacity(0.08), lineWidth: 1)
-                )
-                .accessibilityElement(children: .contain)
-                .accessibilityLabel("Difficulty Selector")
+
+                HStack(spacing: 4) {
+                    ForEach(difficultyLevels, id: \.level) { item in
+                        let isSelected = difficultyBinding.wrappedValue == item.level
+                        Button {
+                            withAnimation(.spring(response: 0.25, dampingFraction: 0.8)) {
+                                difficultyBinding.wrappedValue = item.level
+                            }
+                            UIImpactFeedbackGenerator(style: .soft).impactOccurred()
+                        } label: {
+                            VStack(spacing: 2) {
+                                Image(systemName: item.icon)
+                                    .font(.system(size: 11, weight: .bold))
+
+                                Text(item.label)
+                                    .font(.system(size: 10, weight: .bold))
+                                    .lineLimit(1)
+                                    .minimumScaleFactor(0.6)
+                            }
+                            .foregroundStyle(isSelected ? Color.white : item.color)
+                            .padding(.vertical, 8)
+                            .padding(.horizontal, 2)
+                            .frame(maxWidth: .infinity)
+                            .background(
+                                RoundedRectangle(cornerRadius: 10, style: .continuous)
+                                    .fill(isSelected ? item.color : item.color.opacity(0.12))
+                            )
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 10, style: .continuous)
+                                    .stroke(isSelected ? item.color : item.color.opacity(0.2), lineWidth: 1)
+                            )
+                            .shadow(color: isSelected ? item.color.opacity(0.25) : .clear, radius: 4, y: 2)
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
             }
+            .padding(12)
+            .background(.ultraThinMaterial)
+            .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+            .overlay(
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    .stroke(Color.primary.opacity(0.08), lineWidth: 1)
+            )
         }
     }
 }
-

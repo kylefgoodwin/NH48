@@ -6,11 +6,16 @@ struct BasicInfoInputs: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
             HStack(spacing: 8) {
-                Image(systemName: "info.circle.fill")
-                    .foregroundColor(.blue)
-                    .font(.headline)
+                ZStack {
+                    Circle()
+                        .fill(LinearGradient(colors: [.blue, .cyan], startPoint: .topLeading, endPoint: .bottomTrailing))
+                        .frame(width: 28, height: 28)
+                    Image(systemName: "info.circle.fill")
+                        .foregroundColor(.white)
+                        .font(.system(size: 13, weight: .bold))
+                }
                 Text("Basic Info")
-                    .font(.headline)
+                    .font(.system(.headline, design: .rounded, weight: .bold))
                     .foregroundColor(.primary)
             }
 
@@ -28,7 +33,7 @@ struct BasicInfoInputs: View {
                 .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
                 .overlay(
                     RoundedRectangle(cornerRadius: 14, style: .continuous)
-                        .stroke(Color.primary.opacity(0.08), lineWidth: 1)
+                        .stroke(Color.blue.opacity(0.12), lineWidth: 1)
                 )
             }
 
@@ -46,7 +51,7 @@ struct BasicInfoInputs: View {
                 .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
                 .overlay(
                     RoundedRectangle(cornerRadius: 14, style: .continuous)
-                        .stroke(Color.primary.opacity(0.08), lineWidth: 1)
+                        .stroke(Color.purple.opacity(0.12), lineWidth: 1)
                 )
             }
 
@@ -65,8 +70,47 @@ struct BasicInfoInputs: View {
                 .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
                 .overlay(
                     RoundedRectangle(cornerRadius: 14, style: .continuous)
-                        .stroke(Color.primary.opacity(0.08), lineWidth: 1)
+                        .stroke(Color.teal.opacity(0.12), lineWidth: 1)
                 )
+            }
+
+            // Latitude & Longitude
+            HStack(spacing: 10) {
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("Latitude").font(.caption).bold().foregroundStyle(.secondary)
+                    HStack(spacing: 8) {
+                        Image(systemName: "location.north.line").foregroundStyle(.indigo)
+                        TextField("Latitude", value: $mountain.latitude, format: .number)
+                            .keyboardType(.decimalPad)
+                            .font(.body.monospacedDigit())
+                    }
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 10)
+                    .background(.ultraThinMaterial)
+                    .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 14, style: .continuous)
+                            .stroke(Color.indigo.opacity(0.12), lineWidth: 1)
+                    )
+                }
+
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("Longitude").font(.caption).bold().foregroundStyle(.secondary)
+                    HStack(spacing: 8) {
+                        Image(systemName: "location.north").foregroundStyle(.indigo)
+                        TextField("Longitude", value: $mountain.longitude, format: .number)
+                            .keyboardType(.decimalPad)
+                            .font(.body.monospacedDigit())
+                    }
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 10)
+                    .background(.ultraThinMaterial)
+                    .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 14, style: .continuous)
+                            .stroke(Color.indigo.opacity(0.12), lineWidth: 1)
+                    )
+                }
             }
         }
         .sectionCardStyle()

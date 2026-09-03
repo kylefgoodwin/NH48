@@ -5,7 +5,7 @@ struct RootView: View {
 
     var body: some View {
         TabView {
-            ContentView()
+            HomeView()
                 .tabItem {
                     Label("List", systemImage: "list.bullet")
                 }
