@@ -8,17 +8,22 @@ struct HomeView: View {
     @State private var sortOption: SortOption = .elevationDescending
     @State private var showAddMountainSheet: Bool = false
 
-    private var uniqueRanges: [String] {
-        Array(Set(store.mountains.map { $0.location })).sorted()
+    // Unique ranges mapped with peak counts for the horizontal carousel
+    private var rangesWithCounts: [(name: String, count: Int)] {
+        let ranges = store.mountains.map { $0.location }
+        let grouped = Dictionary(grouping: ranges, by: { $0 }).mapValues { $0.count }
+        return grouped.map { (name: $0.key, count: $0.value) }.sorted { $0.name < $1.name }
     }
 
     private var filteredMountains: [Mountain] {
         var result = store.mountains
+        
         // Filter by search
         if !searchText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
             let query = searchText.lowercased()
             result = result.filter { $0.name.lowercased().contains(query) || $0.location.lowercased().contains(query) }
         }
+        
         // Filter by completion
         switch selectedFilter {
         case .all: break
@@ -27,6 +32,7 @@ struct HomeView: View {
         case .range:
             if let selectedRange { result = result.filter { $0.location == selectedRange } }
         }
+        
         // Sort
         switch sortOption {
         case .elevationDescending:
@@ -61,35 +67,45 @@ struct HomeView: View {
         NavigationStack {
             ZStack {
                 ContentViewBackground()
+                
                 ScrollView {
-                    VStack(spacing: 14) {
-                        // Progress header
-                        ProgressSection(completedInt: progressTuple.completed, totalInt: progressTuple.total, progress: progressTuple.progress)
-                            .padding(.top)
+                    VStack(spacing: 18) {
+                        DashboardHeader(
+                            completed: progressTuple.completed,
+                            total: progressTuple.total,
+                            progress: progressTuple.progress,
+                            greeting: greetingMessage,
+                            motivation: motivationalMessage
+                        )
+                        .padding(.horizontal, 20)
+                        .padding(.top, 10)
 
-                        // Filters
+                        HistoryAndChartCard(store: store)
+
                         SearchBar(
                             searchText: $searchText,
                             sortOption: $sortOption,
                             selectedFilter: $selectedFilter,
                             selectedRange: $selectedRange,
-                            uniqueRanges: uniqueRanges
+                            uniqueRanges: rangesWithCounts.map { $0.name }
                         )
 
-                        // Grid
-                        LazyVGrid(columns: columns, spacing: 14) {
-                            ForEach(filteredMountains) { mountain in
-                                NavigationLink(value: mountain) {
-                                    MountainCardView(mountain: mountain) {
-                                        store.toggleCompletion(for: mountain)
-                                    }
-                                    .environmentObject(store)
-                                }
-                                .buttonStyle(.plain)
-                            }
-                        }
-                        .padding(.horizontal)
-                        .padding(.bottom, 24)
+                        RangeCarousel(
+                            rangesWithCounts: rangesWithCounts,
+                            selectedFilter: $selectedFilter,
+                            selectedRange: $selectedRange
+                        )
+
+                        GridHeaderSection(
+                            title: gridSectionTitle,
+                            count: filteredMountains.count
+                        )
+
+                        MountainGrid(
+                            filteredMountains: filteredMountains,
+                            columns: columns,
+                            store: store
+                        )
                     }
                 }
             }
@@ -99,13 +115,14 @@ struct HomeView: View {
                 }
             }
             .navigationTitle("NH48")
-            .toolbarTitleDisplayMode(.large)
+            .toolbarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     NavigationLink {
                         SettingsView()
                     } label: {
                         Image(systemName: "gear")
+                            .foregroundStyle(.white)
                     }
                 }
                 ToolbarItem(placement: .topBarTrailing) {
@@ -113,12 +130,44 @@ struct HomeView: View {
                         showAddMountainSheet = true
                     } label: {
                         Image(systemName: "plus")
+                            .foregroundStyle(.white)
                     }
                 }
             }
             .sheet(isPresented: $showAddMountainSheet) {
                 AddMountainView(store: store)
             }
+        }
+    }
+
+    // Dynamic UI copy helpers
+    private var greetingMessage: String {
+        let hour = Calendar.current.component(.hour, from: Date())
+        if hour < 12 { return "Good Morning!" }
+        if hour < 18 { return "Good Afternoon!" }
+        return "Good Evening!"
+    }
+
+    private var motivationalMessage: String {
+        let left = progressTuple.total - progressTuple.completed
+        if left == 0 {
+            return "Incredible job! You've conquered all NH48 peaks!"
+        } else if progressTuple.completed > 0 {
+            return "You've hiked \(progressTuple.completed) peaks. Just \(left) more to go!"
+        } else {
+            return "Ready to conquer your first 4,000-footer?"
+        }
+    }
+
+    private var gridSectionTitle: String {
+        if let selectedRange {
+            return selectedRange
+        }
+        switch selectedFilter {
+        case .all: return "All Peaks"
+        case .completed: return "Conquered Peaks"
+        case .notCompleted: return "Pending Climbs"
+        case .range: return "Range Filtered"
         }
     }
 }

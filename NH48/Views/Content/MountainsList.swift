@@ -39,6 +39,7 @@ struct MountainsList: View {
                             MountainCardView(mountain: mountain) {
                                 store.toggleCompletion(for: mountain)
                             }
+                            .environmentObject(store)
                             .frame(maxWidth: .infinity)
                         }
                         .buttonStyle(PlainButtonStyle())
@@ -75,3 +76,4 @@ struct MountainsList: View {
         .padding(.top, -8)
     }
 }
+
