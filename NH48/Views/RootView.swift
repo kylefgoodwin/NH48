@@ -5,21 +5,15 @@ struct RootView: View {
 
     var body: some View {
         TabView {
-            NavigationStack {
-                ContentView()
-            }
-            .tabItem {
-                Label("List", systemImage: "list.bullet")
-            }
+            ContentView()
+                .tabItem {
+                    Label("List", systemImage: "list.bullet")
+                }
 
-            NavigationStack {
-                AllMountainsMapView(mountains: store.mountains)
-                    .navigationTitle("Map")
-                    .navigationBarTitleDisplayMode(.inline)
-            }
-            .tabItem {
-                Label("Map", systemImage: "map")
-            }
+            AllMountainsMapView(mountains: store.mountains)
+                .tabItem {
+                    Label("Map", systemImage: "map")
+                }
         }
         .environmentObject(store)
     }

@@ -6,45 +6,29 @@ struct PhotosGrid: View {
     @State private var selectedPhotoItems: [PhotosPickerItem] = []
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("Photos")
-                .font(.footnote)
-                .foregroundColor(.secondary)
-
-            PhotosPicker(selection: $selectedPhotoItems, maxSelectionCount: 10, matching: .images) {
-                Label("Add Photos", systemImage: "photo.on.rectangle")
-                    .frame(maxWidth: .infinity)
-            }
-            .buttonStyle(.borderedProminent)
-            .controlSize(.small)
-            .onChange(of: selectedPhotoItems) { _, newItems in
-                Task {
-                    for item in newItems {
-                        if let data = try? await item.loadTransferable(type: Data.self),
-                           let uiImage = UIImage(data: data),
-                           let filename = ImageStore.saveJPEG(uiImage) {
-                            mountain.photoFileNames.append(filename)
-                        }
-                    }
-                    selectedPhotoItems.removeAll()
-                }
-            }
-
-            if !mountain.photoFileNames.isEmpty {
-                LazyVGrid(columns: [GridItem(.adaptive(minimum: 90), spacing: 12)], spacing: 12) {
-                    ForEach(mountain.photoFileNames, id: \.self) { filename in
-                        PhotoThumbnail(filename: filename, mountain: $mountain)
+        PhotosPicker(selection: $selectedPhotoItems, maxSelectionCount: 10, matching: .images) {
+            Label("Add Photos", systemImage: "photo.on.rectangle")
+        }
+        .onChange(of: selectedPhotoItems) { _, newItems in
+            Task {
+                for item in newItems {
+                    if let data = try? await item.loadTransferable(type: Data.self),
+                       let uiImage = UIImage(data: data),
+                       let filename = ImageStore.saveJPEG(uiImage) {
+                        mountain.photoFileNames.append(filename)
                     }
                 }
-                .padding(.top, 6)
-            } else {
-                Text("No photos yet")
-                    .foregroundStyle(.secondary)
-                    .frame(maxWidth: .infinity, alignment: .center)
-                    .padding(.vertical, 8)
+                selectedPhotoItems.removeAll()
             }
         }
-        .sectionCardStyle()
+
+        if !mountain.photoFileNames.isEmpty {
+            LazyVGrid(columns: [GridItem(.adaptive(minimum: 80), spacing: 8)], spacing: 8) {
+                ForEach(mountain.photoFileNames, id: \.self) { filename in
+                    PhotoThumbnail(filename: filename, mountain: $mountain)
+                }
+            }
+        }
     }
 }
 
@@ -58,18 +42,11 @@ struct PhotoThumbnail: View {
                 Image(uiImage: image)
                     .resizable()
                     .scaledToFill()
-                    .frame(width: 90, height: 90)
+                    .frame(width: 80, height: 80)
                     .clipped()
-                    .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
-            } else {
-                ZStack {
-                    RoundedRectangle(cornerRadius: 10, style: .continuous)
-                        .fill(Color(.secondarySystemBackground))
-                        .frame(width: 90, height: 90)
-                    Image(systemName: "photo")
-                        .foregroundStyle(.secondary)
-                }
+                    .clipShape(RoundedRectangle(cornerRadius: 8))
             }
+
             Button {
                 if let idx = mountain.photoFileNames.firstIndex(of: filename) {
                     mountain.photoFileNames.remove(at: idx)
@@ -77,14 +54,11 @@ struct PhotoThumbnail: View {
                 }
             } label: {
                 Image(systemName: "xmark.circle.fill")
-                    .font(.system(size: 14))
                     .foregroundColor(.white)
-                    .padding(6)
                     .background(Circle().fill(Color.black.opacity(0.6)))
             }
             .buttonStyle(.plain)
-            .contentShape(Circle())
-            .offset(x: -6, y: 6)
+            .offset(x: 4, y: -4)
         }
     }
 }

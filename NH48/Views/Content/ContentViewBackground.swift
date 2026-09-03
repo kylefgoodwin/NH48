@@ -11,6 +11,7 @@ struct ContentViewBackground: View {
                 ]),
                 startPoint: .topLeading, endPoint: .bottomTrailing
             )
+            
             RadialGradient(
                 colors: [Color.white.opacity(0.18), Color.clear],
                 center: .top,
@@ -43,11 +44,6 @@ struct ContentViewBackground: View {
                 endPoint: .top
             )
             .blendMode(.softLight)
-            
-            Rectangle()
-                .fill(.ultraThinMaterial)
-                .opacity(0.03)
-                .allowsHitTesting(false)
         }
         .ignoresSafeArea()
     }

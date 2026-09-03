@@ -1,15 +1,8 @@
-//
-//  MountainCardView.swift
-//  NH48
-//
-//  Created by Kyle Goodwin on 9/24/25.
-//
-
 import SwiftUI
 
 struct MountainCardView: View {
-    var mountain: Mountain
-    var onToggleCompleted: () -> Void
+    let mountain: Mountain
+    let onToggleCompleted: () -> Void
 
     private var userImage: UIImage? {
         if let filename = mountain.image, let docImage = ImageStore.loadImage(named: filename) {
@@ -23,84 +16,76 @@ struct MountainCardView: View {
 
     var body: some View {
         ZStack(alignment: .bottomLeading) {
-            ZStack {
+            // Background Image or Gradient
+            Group {
                 if let image = userImage {
                     Image(uiImage: image)
                         .resizable()
                         .scaledToFill()
-                        .frame(height: 200)
-                        .clipped()
                 } else {
-                    let gradient = mountain.isCompleted
-                        ? LinearGradient(colors: [.green.opacity(0.8), .blue.opacity(0.8)], startPoint: .topLeading, endPoint: .bottomTrailing)
-                        : LinearGradient(colors: [Color(.systemGray4), Color(.systemGray6)], startPoint: .topLeading, endPoint: .bottomTrailing)
-
-                    gradient
-                        .frame(height: 200)
+                    Rectangle()
+                        .fill(
+                            mountain.isCompleted
+                            ? LinearGradient(colors: [.green.opacity(0.8), .blue.opacity(0.8)], startPoint: .topLeading, endPoint: .bottomTrailing)
+                            : LinearGradient(colors: [Color(.systemGray4), Color(.systemGray6)], startPoint: .topLeading, endPoint: .bottomTrailing)
+                        )
                         .overlay(
                             Image(systemName: "mountain.2.fill")
-                                .font(.system(size: 55))
+                                .font(.system(size: 50))
                                 .foregroundStyle(.white.opacity(mountain.isCompleted ? 0.9 : 0.4))
                         )
                 }
             }
-            .cornerRadius(20)
+            .frame(height: 180)
+            .clipped()
 
-            // Bottom gradient overlay for legible text
+            // Bottom Gradient Overlay for text readability
             LinearGradient(
                 colors: [.black.opacity(0.75), .black.opacity(0.2), .clear],
                 startPoint: .bottom,
                 endPoint: .top
             )
-            .cornerRadius(20)
-            
-            // Text metadata
-            VStack(alignment: .leading, spacing: 4) {
-                Text(mountain.location.uppercased())
-                    .font(.caption2.bold())
-                    .tracking(1)
-                    .foregroundColor(.white.opacity(0.8))
-                
-                Text(mountain.name)
-                    .font(.title3.bold())
-                    .foregroundColor(.white)
-                
-                HStack(spacing: 6) {
-                    Label("\(mountain.elevation) ft", systemImage: "arrow.up.forward")
-                        .font(.subheadline)
-                        .foregroundColor(.white.opacity(0.9))
-                    
-                    if mountain.isCompleted {
-                        Text("•")
-                            .foregroundColor(.white.opacity(0.6))
-                        Label("Completed", systemImage: "checkmark.circle.fill")
+
+            // Info Content
+            HStack(alignment: .bottom) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(mountain.location.uppercased())
+                        .font(.caption2.bold())
+                        .tracking(1)
+                        .foregroundStyle(.white.opacity(0.8))
+
+                    Text(mountain.name)
+                        .font(.title3.bold())
+                        .foregroundStyle(.white)
+
+                    HStack(spacing: 8) {
+                        Label("\(mountain.elevation) ft", systemImage: "arrow.up.forward")
                             .font(.subheadline)
-                            .foregroundColor(.green)
+                            .foregroundStyle(.white.opacity(0.9))
+
+                        if mountain.isCompleted {
+                            Text("•")
+                                .foregroundStyle(.white.opacity(0.6))
+                            Label("Completed", systemImage: "checkmark.circle.fill")
+                                .font(.subheadline.weight(.medium))
+                                .foregroundStyle(.green)
+                        }
                     }
                 }
+
+                Spacer()
+
+                Button(action: onToggleCompleted) {
+                    Image(systemName: mountain.isCompleted ? "checkmark.circle.fill" : "circle")
+                        .font(.title2)
+                        .foregroundStyle(mountain.isCompleted ? .green : .white)
+                }
+                .buttonStyle(.plain)
+                .accessibilityIdentifier("CompletionToggle")
             }
             .padding(16)
-            
-            VStack {
-                HStack {
-                    Spacer()
-                    Button(action: onToggleCompleted) {
-                        Image(systemName: mountain.isCompleted ? "mountain.2.fill" : "mountain.2")
-                            .font(.system(size: 16, weight: .bold))
-                            .foregroundColor(mountain.isCompleted ? .green : .white)
-                            .padding(10)
-                            .background(.ultraThinMaterial)
-                            .clipShape(Circle())
-                            .shadow(color: Color.black.opacity(0.2), radius: 4, x: 0, y: 2)
-                    }
-                    .buttonStyle(.plain)
-                    .accessibilityIdentifier("CompletionToggle")
-                }
-                Spacer()
-            }
-            .padding(12)
         }
-        .padding(.horizontal, 4)
-        .shadow(color: Color.black.opacity(0.08), radius: 10, x: 0, y: 4)
+        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .shadow(color: .black.opacity(0.08), radius: 8, x: 0, y: 3)
     }
 }

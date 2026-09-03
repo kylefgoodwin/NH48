@@ -1,5 +1,4 @@
 import SwiftUI
-import MapKit
 
 struct MountainsList: View {
     let filteredMountains: [Mountain]
@@ -33,21 +32,18 @@ struct MountainsList: View {
                     }
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 24)
-                }
-                
-                ForEach(filteredMountains) { mountain in
-                    NavigationLink(value: mountain) {
-                        MountainCardView(mountain: mountain) {
-                            if let index = store.mountains.firstIndex(where: { $0.id == mountain.id }) {
-                                store.mountains[index].isCompleted.toggle()
-                                store.saveData()
+                } else {
+                    ForEach(filteredMountains) { mountain in
+                        NavigationLink(value: mountain) {
+                            MountainCardView(mountain: mountain) {
+                                store.toggleCompletion(for: mountain)
                             }
+                            .padding(.horizontal, 4)
                         }
-                        .padding(.horizontal, 4)
-                    }
-                    .buttonStyle(PlainButtonStyle())
-                    .contextMenu {
-                        MountainContextMenu(mountain: mountain, store: store)
+                        .buttonStyle(PlainButtonStyle())
+                        .contextMenu {
+                            MountainContextMenu(mountain: mountain, store: store)
+                        }
                     }
                 }
             }
@@ -56,10 +52,7 @@ struct MountainsList: View {
         }
         .navigationDestination(for: Mountain.self) { mountain in
             MountainDetailView(mountain: mountain) { updatedMountain in
-                if let index = store.mountains.firstIndex(where: { $0.id == updatedMountain.id }) {
-                    store.mountains[index] = updatedMountain
-                    store.saveData()
-                }
+                store.updateMountain(updatedMountain)
             }
         }
         .background(
@@ -84,51 +77,22 @@ struct MountainsList: View {
 
 struct MountainContextMenu: View {
     let mountain: Mountain
-    let store: MountainStore
+    @ObservedObject var store: MountainStore
     
     var body: some View {
         Button {
-            if let index = store.mountains.firstIndex(where: { $0.id == mountain.id }) {
-                store.mountains[index].isCompleted.toggle()
-                if !store.mountains[index].isCompleted {
-                    store.mountains[index].completionDate = nil
-                }
-                store.saveData()
-            }
+            store.toggleCompletion(for: mountain)
         } label: {
-            Label(mountain.isCompleted ? "Mark as Not Completed" : "Mark as Completed",
-                  systemImage: mountain.isCompleted ? "xmark.circle" : "checkmark.circle")
-        }
-        
-        Button {
-            if let index = store.mountains.firstIndex(where: { $0.id == mountain.id }) {
-                store.mountains[index].isCompleted = true
-                store.mountains[index].completionDate = Date()
-                store.saveData()
-            }
-        } label: {
-            Label("Mark Completed Today", systemImage: "calendar.badge.checkmark")
-        }
-        
-        if let lat = mountain.latitude, let lon = mountain.longitude {
-            Button {
-                let coord = CLLocationCoordinate2D(latitude: lat, longitude: lon)
-                let placemark = MKPlacemark(coordinate: coord)
-                let item = MKMapItem(placemark: placemark)
-                item.name = mountain.name
-                item.openInMaps()
-            } label: {
-                Label("Open in Maps", systemImage: "map")
-            }
+            Label(
+                mountain.isCompleted ? "Mark as Uncompleted" : "Mark as Completed",
+                systemImage: mountain.isCompleted ? "circle" : "checkmark.circle"
+            )
         }
         
         Button(role: .destructive) {
-            if let index = store.mountains.firstIndex(where: { $0.id == mountain.id }) {
-                store.mountains.remove(at: index)
-                store.saveData()
-            }
+            store.delete(mountain)
         } label: {
-            Label("Delete", systemImage: "trash")
+            Label("Delete Mountain", systemImage: "trash")
         }
     }
 }

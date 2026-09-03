@@ -1,11 +1,6 @@
 import SwiftUI
 
 struct ContentViewHeader: View {
-    @Binding var selectedFilter: MountainFilter
-    @Binding var selectedRange: String?
-    @Binding var sortOption: SortOption
-    var uniqueRanges: [String]
-    
     var onAddTap: () -> Void
 
     var body: some View {
@@ -25,7 +20,7 @@ struct ContentViewHeader: View {
             Spacer()
             
             Text("NH48")
-                .font(.largeTitle.bold())
+                .font(.system(size: 34, weight: .black, design: .rounded))
                 .foregroundColor(.white)
             
             Spacer()

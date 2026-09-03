@@ -4,16 +4,21 @@ struct BasicInfoInputs: View {
     @Binding var mountain: Mountain
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("Basic Info")
-                .font(.footnote)
-                .foregroundColor(.secondary)
+        VStack(alignment: .leading, spacing: 14) {
+            HStack(spacing: 8) {
+                Image(systemName: "info.circle.fill")
+                    .foregroundColor(.blue)
+                    .font(.headline)
+                Text("Basic Info")
+                    .font(.headline)
+                    .foregroundColor(.primary)
+            }
 
             VStack(alignment: .leading, spacing: 6) {
-                Text("Name").font(.caption).foregroundStyle(.secondary)
+                Text("Name").font(.caption).bold().foregroundStyle(.secondary)
                 HStack(spacing: 10) {
                     Image(systemName: "textformat")
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(.blue)
                     TextField("Name", text: $mountain.name)
                         .textInputAutocapitalization(.words)
                 }
@@ -26,14 +31,13 @@ struct BasicInfoInputs: View {
                         .stroke(Color.primary.opacity(0.08), lineWidth: 1)
                 )
             }
-            .padding(.vertical, 2)
 
             VStack(alignment: .leading, spacing: 6) {
-                Text("Location (range)").font(.caption).foregroundStyle(.secondary)
+                Text("Location (e.g. Range)").font(.caption).bold().foregroundStyle(.secondary)
                 HStack(spacing: 10) {
                     Image(systemName: "map")
-                        .foregroundStyle(.secondary)
-                    TextField("Location (range)", text: $mountain.location)
+                        .foregroundStyle(.purple)
+                    TextField("Location (e.g. Range)", text: $mountain.location)
                         .textInputAutocapitalization(.words)
                 }
                 .padding(.horizontal, 12)
@@ -45,13 +49,12 @@ struct BasicInfoInputs: View {
                         .stroke(Color.primary.opacity(0.08), lineWidth: 1)
                 )
             }
-            .padding(.vertical, 2)
 
             VStack(alignment: .leading, spacing: 6) {
-                Text("Elevation (ft)").font(.caption).foregroundStyle(.secondary)
+                Text("Elevation (ft)").font(.caption).bold().foregroundStyle(.secondary)
                 HStack(spacing: 10) {
                     Image(systemName: "arrow.up.and.down")
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(.teal)
                     TextField("Elevation (ft)", value: $mountain.elevation, format: .number)
                         .keyboardType(.numberPad)
                         .font(.body.monospacedDigit())
@@ -65,7 +68,6 @@ struct BasicInfoInputs: View {
                         .stroke(Color.primary.opacity(0.08), lineWidth: 1)
                 )
             }
-            .padding(.vertical, 2)
         }
         .sectionCardStyle()
     }

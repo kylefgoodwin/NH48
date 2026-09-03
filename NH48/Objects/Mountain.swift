@@ -1,10 +1,3 @@
-//
-//  Mountain.swift
-//  NH48
-//
-//  Created by Kyle Goodwin on 8/3/25.
-//
-
 import Foundation
 
 struct Mountain: Identifiable, Codable, Equatable, Hashable {
@@ -12,21 +5,20 @@ struct Mountain: Identifiable, Codable, Equatable, Hashable {
     var name: String
     var elevation: Int
     var location: String
-    var description: String? = nil   // Added default value
-    var latitude: Double? = nil      // Added default value
-    var longitude: Double? = nil     // Added default value
+    var description: String?
+    var latitude: Double?
+    var longitude: Double?
     var isCompleted: Bool
-    var image: String? = nil
+    var image: String?
 
-    // Tracker fields
-    var personalNotes: String? = nil
-    var completionDate: Date? = nil
-    var rating: Int? = nil
-    var difficulty: Int? = nil
-    var conditions: [String]? = nil
-    var distanceMiles: Double? = nil
-    var elevationGain: Int? = nil
-    var durationMinutes: Int? = nil
+    var personalNotes: String?
+    var completionDate: Date?
+    var rating: Int?
+    var difficulty: Int?
+    var conditions: [String]?
+    var distanceMiles: Double?
+    var elevationGain: Int?
+    var durationMinutes: Int?
     var tags: [String] = []
     var photoFileNames: [String] = []
 }

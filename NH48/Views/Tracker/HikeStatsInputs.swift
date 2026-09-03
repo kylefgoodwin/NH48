@@ -3,64 +3,151 @@ import SwiftUI
 struct HikeStatsInputs: View {
     @Binding var mountain: Mountain
 
+    private var averagePace: String? {
+        guard let miles = mountain.distanceMiles, miles > 0,
+              let minutes = mountain.durationMinutes, minutes > 0 else { return nil }
+        let pace = Double(minutes) / miles
+        return String(format: "%.1f min/mi", pace)
+    }
+
     var body: some View {
-        VStack(spacing: 12) {
-            VStack(alignment: .leading, spacing: 6) {
-                Text("Distance (miles)").font(.caption).foregroundStyle(.secondary)
-                HStack(spacing: 10) {
-                    Image(systemName: "ruler").foregroundStyle(.secondary)
-                    TextField("Distance (miles)", value: $mountain.distanceMiles, format: .number)
-                        .keyboardType(.decimalPad)
-                        .font(.body.monospacedDigit())
-                }
-                .padding(.horizontal, 12)
-                .padding(.vertical, 10)
-                .background(.ultraThinMaterial)
-                .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 14, style: .continuous)
-                        .stroke(Color.primary.opacity(0.08), lineWidth: 1)
-                )
-            }
-            .padding(.vertical, 2)
+        let columns: [GridItem] = [
+            GridItem(.flexible(minimum: 180), spacing: 12, alignment: .top),
+            GridItem(.flexible(minimum: 180), spacing: 12, alignment: .top)
+        ]
 
-            VStack(alignment: .leading, spacing: 6) {
-                Text("Elevation Gain (ft)").font(.caption).foregroundStyle(.secondary)
-                HStack(spacing: 10) {
-                    Image(systemName: "arrow.up").foregroundStyle(.secondary)
-                    TextField("Elevation Gain (ft)", value: $mountain.elevationGain, format: .number)
-                        .keyboardType(.numberPad)
-                        .font(.body.monospacedDigit())
-                }
-                .padding(.horizontal, 12)
-                .padding(.vertical, 10)
-                .background(.ultraThinMaterial)
-                .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 14, style: .continuous)
-                        .stroke(Color.primary.opacity(0.08), lineWidth: 1)
-                )
-            }
-            .padding(.vertical, 2)
+        LazyVGrid(columns: columns, alignment: .leading, spacing: 10) {
+            EditableStatBox(icon: "ruler", label: "Distance", value: Binding(
+                get: { mountain.distanceMiles?.formatted() ?? "" },
+                set: {
+                    if let val = Double($0), val >= 0 {
+                        mountain.distanceMiles = val
+                    } else if $0.isEmpty {
+                        mountain.distanceMiles = nil
+                    }
+                }),
+                            suffix: "mi", color: .blue).frame(maxWidth: .infinity)
 
-            VStack(alignment: .leading, spacing: 6) {
-                Text("Duration (minutes)").font(.caption).foregroundStyle(.secondary)
-                HStack(spacing: 10) {
-                    Image(systemName: "clock").foregroundStyle(.secondary)
-                    TextField("Duration (minutes)", value: $mountain.durationMinutes, format: .number)
-                        .keyboardType(.numberPad)
-                        .font(.body.monospacedDigit())
-                }
-                .padding(.horizontal, 12)
-                .padding(.vertical, 10)
-                .background(.ultraThinMaterial)
-                .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 14, style: .continuous)
-                        .stroke(Color.primary.opacity(0.08), lineWidth: 1)
-                )
+            EditableStatBox(icon: "arrow.up.forward", label: "Elevation Gain", value: Binding(
+                get: { mountain.elevationGain?.formatted() ?? "" },
+                set: {
+                    if let val = Int($0), val >= 0 {
+                        mountain.elevationGain = val
+                    } else if $0.isEmpty {
+                        mountain.elevationGain = nil
+                    }
+                }),
+                            suffix: "ft", color: .purple).frame(maxWidth: .infinity)
+
+            EditableStatBox(icon: "clock", label: "Duration", value: Binding(
+                get: { mountain.durationMinutes?.formatted() ?? "" },
+                set: {
+                    if let val = Int($0), val >= 0 {
+                        mountain.durationMinutes = val
+                    } else if $0.isEmpty {
+                        mountain.durationMinutes = nil
+                    }
+                }),
+                            suffix: "min", color: .orange).frame(maxWidth: .infinity)
+
+            if let pace = averagePace {
+                CompactStatBox(icon: "stopwatch", label: "Avg Pace", value: pace, suffix: "", color: .green).frame(maxWidth: .infinity)
             }
-            .padding(.vertical, 2)
         }
+        .padding(.vertical, 6)
     }
 }
+
+struct EditableStatBox: View {
+    let icon: String
+    let label: String
+    @Binding var value: String
+    let suffix: String
+    let color: Color
+
+    var body: some View {
+        VStack(spacing: 4) {
+            HStack(spacing: 6) {
+                Image(systemName: icon)
+                    .font(.system(size: 16))
+                    .foregroundStyle(color)
+                    .frame(width: 22, alignment: .center)
+                TextField("", text: $value)
+                    .font(.system(size: 16, weight: .bold, design: .rounded))
+                    .multilineTextAlignment(.leading)
+                    .frame(minWidth: 60, maxWidth: 100, alignment: .leading)
+                    .keyboardType(.decimalPad)
+                    .foregroundColor(.primary)
+                    .layoutPriority(1)
+                if !suffix.isEmpty {
+                    Text(suffix)
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                        .fixedSize(horizontal: true, vertical: false)
+                        .layoutPriority(2)
+                }
+            }
+            Text(label)
+                .font(.caption2)
+                .foregroundStyle(.secondary)
+                .lineLimit(1)
+                .minimumScaleFactor(0.7)
+        }
+        .padding(.vertical, 8)
+        .padding(.horizontal, 12)
+        .background(
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .fill(.ultraThinMaterial)
+                .shadow(color: color.opacity(0.10), radius: 6, y: 2)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .stroke(color.gradient.opacity(0.18), lineWidth: 1.5)
+        )
+    }
+}
+
+struct CompactStatBox: View {
+    let icon: String
+    let label: String
+    let value: String
+    let suffix: String
+    let color: Color
+
+    var body: some View {
+        VStack(spacing: 3) {
+            HStack(spacing: 5) {
+                Image(systemName: icon)
+                    .font(.system(size: 16))
+                    .foregroundStyle(color)
+                    .frame(width: 20, alignment: .center)
+                Text(value)
+                    .font(.system(size: 14, weight: .bold, design: .rounded))
+                    .foregroundStyle(.primary)
+                if !suffix.isEmpty {
+                    Text(suffix)
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                }
+            }
+            Text(label)
+                .font(.caption2)
+                .foregroundStyle(.secondary)
+                .lineLimit(1)
+                .minimumScaleFactor(0.8)
+        }
+        .padding(.vertical, 6)
+        .padding(.horizontal, 10)
+        .background(
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .fill(.ultraThinMaterial)
+                .shadow(color: color.opacity(0.10), radius: 6, y: 2)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .stroke(color.gradient.opacity(0.18), lineWidth: 1.5)
+        )
+    }
+}
+

@@ -12,15 +12,35 @@ struct CompletionDateInput: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
-            Text("Completion Date").font(.caption).foregroundStyle(.secondary)
-            DatePicker(
-                "",
-                selection: dateBinding,
-                displayedComponents: [.date]
-            )
-            .labelsHidden()
+            HStack {
+                InlineSectionLabel(systemImage: "calendar", title: "Completion Date", color: .blue)
+                Spacer()
+                Button("Set Today") {
+                    withAnimation { mountain.completionDate = Date() }
+                    UIImpactFeedbackGenerator(style: .soft).impactOccurred()
+                }
+                .font(.caption.weight(.semibold))
+                .tint(.blue)
+                .buttonStyle(.borderless)
+            }
+
+            HStack {
+                DatePicker("Date", selection: dateBinding, displayedComponents: [.date])
+                    .labelsHidden()
+                Spacer()
+                if mountain.completionDate != nil {
+                    Button {
+                        withAnimation { mountain.completionDate = nil }
+                        UIImpactFeedbackGenerator(style: .soft).impactOccurred()
+                    } label: {
+                        Image(systemName: "xmark.circle.fill")
+                            .foregroundStyle(.secondary.opacity(0.7))
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
             .padding(.horizontal, 12)
-            .padding(.vertical, 10)
+            .padding(.vertical, 8)
             .background(.ultraThinMaterial)
             .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
             .overlay(
@@ -28,6 +48,5 @@ struct CompletionDateInput: View {
                     .stroke(Color.primary.opacity(0.08), lineWidth: 1)
             )
         }
-        .padding(.vertical, 2)
     }
 }
