@@ -45,7 +45,13 @@ struct CompletionChart: View {
                         .foregroundStyle(.white)
                 }
             }
-            .chartXAxis { AxisMarks(values: .automatic(desiredCount: 4)) }
+            .chartXAxis {
+                AxisMarks(values: .stride(by: .day)) { value in
+                    AxisGridLine()
+                    AxisTick()
+                    AxisValueLabel(format: .dateTime.day().month(.abbreviated))
+                }
+            }
             .frame(height: 120)
             .padding(.horizontal)
         }

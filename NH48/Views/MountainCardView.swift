@@ -47,6 +47,8 @@ struct MountainCardView: View {
                     .minimumScaleFactor(0.85)
                     .fixedSize(horizontal: true, vertical: false)
 
+                .padding(.bottom, mountain.isCompleted ? 28 : 0)
+
                 // Meta
                 HStack(spacing: 8) {
                     Label(elevationText, systemImage: "arrow.up.right")
@@ -61,7 +63,7 @@ struct MountainCardView: View {
                             .font(.caption.weight(.semibold))
                             .foregroundStyle(.secondary)
                         )
-                        .hidden() // use overlay to keep fixed width text without wrapping
+                        .hidden()
 
                     Spacer(minLength: 0)
 
@@ -90,7 +92,6 @@ struct MountainCardView: View {
             .contentShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
             .contextMenu { MountainContextMenu(mountain: mountain, store: store) }
             .overlay(alignment: .bottomLeading) {
-                // Completed badge that does not affect layout (overlay)
                 if mountain.isCompleted {
                     Text("Completed")
                         .font(.caption2.weight(.bold))
@@ -139,3 +140,4 @@ struct MountainCardView: View {
             .previewLayout(.sizeThatFits)
     }
 }
+
